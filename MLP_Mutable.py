@@ -15,9 +15,13 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse):
+def think(inputs, synapse, noise = False):
     bias= -1
-    return nonlin((np.dot(inputs,synapse)+ bias))
+    if noise == False:
+        return nonlin((np.dot(inputs,synapse)+ bias))
+    else:
+        nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
+        return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
 def Flatt(inputlist):
     output_list = []

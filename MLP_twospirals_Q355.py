@@ -41,7 +41,7 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-dataset = two_spirals(size=10)
+dataset = two_spirals(size=150)
 dataset.set_spirals()
 dataset.string_toscaler()
 
@@ -57,7 +57,7 @@ hidden_layer_count = 2 #needs at least 1 hidden unit
 hidden_units = 50 #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 500
+epoch_count = 10000
 l_rate = 0.01
 
 #special parameters
@@ -65,6 +65,7 @@ astro_status = True
 if astro_status == True:
 
     start_vals = np.random.random(3)
+    start_vals[2] = 1
     # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
     backpropastro = False
     train_decay = True
@@ -72,14 +73,13 @@ if astro_status == True:
 
     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
     anne.set_parameters()
+    anne.show_parameters()
     
 
 
 
 
-
-
-
+##
 
 
 syn_list = []
@@ -299,7 +299,7 @@ plt.scatter(bx_list,by_list,label = 'b')
 plt.show()
         # both_list.append[layer_list[-1]]
 
-
+anne.show_parameters()
 
 
 

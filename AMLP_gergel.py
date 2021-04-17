@@ -8,6 +8,7 @@ class AAN(): #artificial astrocyte network
  
     # def __init__(self,size = (1,2),decay_rate = [0.8,0.7], threshold = [0.8,0.8], initial_act = [0.3,0.3]):
     def __init__(self,size = (2,10),decay_rate = 0.8, threshold = 0.8, initial_act = 0.0, stable = True, weight=0.5, learning_duration = 2, backprop_status= False):
+        self.size = size
         self.input = np.zeros(size) #input from synapse
         self.output = np.zeros(size) #astrotrasmitter back into synapse
         self.activity = np.zeros(size) #holds activations
@@ -159,7 +160,43 @@ class AAN(): #artificial astrocyte network
         if self.backprop == True:
             self.apply_limits()
     
+    def show_parameters(self):
+        # print('weights',self.weights)
+        # print('thresh',self.threshold)
+        # print('decay',self.decay_rate)
+        x_range = 0
+        weightlist = []
+        thres_list = []
+        dec_list = []
+        for row in range(0,len(self.input)):
+            for astro in range(0,len(self.input[row])):
+                weightlist.append(self.weights[row][astro])
+                thres_list.append(self.threshold[row][astro])
+                dec_list.append(self.decay_rate[row][astro])
+                x_range +=1
+                
+        plt.subplot(1,3,1)
+        plt.title('Astrocytic weights')
+        # fig = plt.figure()
+        # plt.add_axes([0,0,1,1])
+        # langs = ['C', 'C++', 'Java', 'Python', 'PHP']
+        # students = [23,17,35,29,12]
+        # ax.bar(langs,students)
+        # plt.show()
+        plt.bar(x = range(0,x_range),height=weightlist)
+        # plt.show()
+        # plt.legend()
 
+        plt.subplot(1,3,2)
+        plt.title('Astrocytic Thresholds')
+        plt.bar(height = thres_list, x = range(x_range))
+        # plt.legend
+
+        plt.subplot(1,3,3)
+        plt.title('Astrocytic Decay')
+        plt.bar(height = dec_list, x = range(x_range))
+        # plt.legend
+        plt.show()
 
 if __name__ == "__main__":
     anne = AAN(initial_act=0)
