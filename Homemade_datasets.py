@@ -88,7 +88,7 @@ class two_spirals():
         self.x = []
         self.y = [] #holds scaler 0=A, 1=B
         self.range = size
-        self.outputs = [] #holds strings
+        self.Outputs = [] #holds strings
         # self.spiral_num = spiral_num
         pass
 
@@ -120,15 +120,15 @@ class two_spirals():
         # print('x',len(self.x))
         for dp in range(0,len(self.x)):
             if self.x[dp] in self.a[1]:
-                self.outputs.append(self.a[0])
+                self.Outputs.append(self.a[0])
             elif self.x[dp] in self.b[1]:
-                self.outputs.append(self.b[0])
+                self.Outputs.append(self.b[0])
             else:
                 print('this data point is in neither list')
 
     def string_toscaler(self):
         datapoint = []
-        for value in self.outputs:
+        for value in self.Outputs:
             if value == 'A':
                 datapoint.append([0])
             elif value == 'B':

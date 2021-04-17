@@ -1,8 +1,10 @@
+# MLP two spirals project code
+
 # MLP_NParity_Project code
 
 import numpy as np
 import matplotlib.pyplot as plt
-from Homemade_datasets import Nparity_dataset
+from Homemade_datasets import two_spirals
 from AMLP_gergel import AAN
 
 def nonlin(x, derive = False):
@@ -36,36 +38,35 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
 
     represent = actual
     network_error = actual - networkoutput
-
     return network_error
 
 ################################### load dataset
-n = 6
-dataset = Nparity_dataset(N= n)
-dataset.populate()
+dataset = two_spirals(size=10)
+dataset.set_spirals()
+dataset.string_toscaler()
 
-input_x = dataset.X
+input_x = dataset.x
 
-output_y = dataset.Outputs
+output_y = dataset.y
 
 
 
 
 #network parameters
-hidden_layer_count = 1 #needs at least 1 hidden unit
-hidden_units = 20 #all hidden layers have the same amount
+hidden_layer_count = 2 #needs at least 1 hidden unit
+hidden_units = 50 #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
 epoch_count = 500
-l_rate = 0.1
+l_rate = 0.01
 
 #special parameters
 astro_status = True
 if astro_status == True:
 
-    # start_vals = np.random.random(3)
-    start_vals = [0.5,0.5,1] #[decay, threshold, weight]
-    backpropastro = True
+    start_vals = np.random.random(3)
+    # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
+    backpropastro = False
     train_decay = True
     train_threshold = True
 
@@ -217,4 +218,90 @@ for lay in range(1,total_layer_count):
 
 network_output = layer_list[-1]
 print('actual',network_output)
+
+###validation - print out what the network views as each
+a_list = []
+b_list = []
+ax_list = []
+ay_list = []
+bx_list = []
+by_list = []
+both_list = []
+# for point in input_x:
+for train_unit_count in range(0, int(len(input_x))-1):
+
+        point = input_x[train_unit_count]
+        train_unit = input_x[train_unit_count]
+        train_unit = np.asarray(train_unit)
+        layer_list = []
+
+        new_unit = Flatt(train_unit)
+        new_unit = np.asarray(new_unit)
+    
+
+        layer_list.append(new_unit.T)
+
+    
+
+        for lay in range(1,total_layer_count):
+            prev_layer = layer_list[lay-1]
+
+
+
+            if astro_status == False:
+                layer = think(prev_layer,syn_list[lay-1])
+                layer_list.append(layer)
+
+            else:
+                layer = think_astro(prev_layer,syn_list[lay-1])
+
+                if lay < (total_layer_count-1): #index is one less than total layer count
+                    anne.input[lay-1] = nonlin(layer)   #lay-1 because layer 1 for neuron is layer 0 for glia
+                    if train_decay == False:
+                        if train_threshold == False: #both false
+                            anne.compute_activation()
+                        else: #decay false, threshold true
+                            anne.compute_activation_theta()
+
+                    elif train_decay == True: 
+                        if train_threshold == False: #decay true, threshold false
+                            anne.compute_activation_decay()
+                        else:
+                            anne.compute_activation_all() #all true
+
+
+                    for n in range(0,len(layer)):
+                        layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
+                layer_list.append(nonlin(layer))
+
+        if layer_list[-1] >= 0.5: #0 == a, 1 == b
+            # print('point',point)
+            b_list.append(point)
+        else:
+            
+            a_list.append(point)
+
+dataset.plot_spirals()
+print('a len',len(a_list))
+print('b len',len(b_list))
+for pt in a_list:
+    ax_list.append(pt[0])
+    ay_list.append(pt[1])
+# ax_lista_list[0])
+# ay_list.append(a_list[1])
+for pit in b_list:
+    bx_list.append(pit[0])
+    by_list.append(pit[1])
+plt.scatter(ax_list,ay_list, label = 'a')
+plt.scatter(bx_list,by_list,label = 'b')
+# plt.plot(a_list, label = 'a')
+# plt.plot(b_list, label = 'b')
+plt.show()
+        # both_list.append[layer_list[-1]]
+
+
+
+
+
+
 
