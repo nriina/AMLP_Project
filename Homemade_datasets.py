@@ -89,6 +89,10 @@ class two_spirals():
         self.y = [] #holds scaler 0=A, 1=B
         self.range = size
         self.Outputs = [] #holds strings
+        self.train_x = []
+        self.train_y = []
+        self.test_x = []
+        self.text_y = []
         # self.spiral_num = spiral_num
         pass
 
@@ -156,6 +160,17 @@ class two_spirals():
         plt.scatter(bx_list,by_list, label=self.b[0])
         plt.legend()
         plt.show()
+
+    def test_train_split(self,train_proportion = 0.7): #0.7 = 70% train, 30% test
+        train_length = int(len(self.x) * train_proportion)
+        self.train_x = self.x[:train_length]
+        self.train_y = self.y[:train_length]
+        self.test_x = self.x[train_length:]
+        self.test_y = self.x[train_length:]
+            
+
+
+
 
 class Chaos_time():
     def __init__(self):

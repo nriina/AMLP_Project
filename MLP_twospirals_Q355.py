@@ -53,19 +53,26 @@ dataset = two_spirals(size=150)
 dataset.set_spirals()
 dataset.string_toscaler()
 
-input_x = dataset.x
+dataset.test_train_split(0.7)
 
-output_y = dataset.y
+# input_x = dataset.x
+input_x = dataset.train_x
 
+# output_y = dataset.y
+output_y = dataset.train_y
 
-
+print('len total',len(dataset.x))
+print('len train',len(dataset.train_x))
+print('len test',len(dataset.test_x))
+# print('train_x[-1',input_x[-1])
+# print('test 1',dataset.test_x[0])
 
 #network parameters
-hidden_layer_count = 2 #needs at least 1 hidden unit
+hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = 50 #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 10000
+epoch_count = 100
 l_rate = 0.01
 
 #special parameters
@@ -237,6 +244,8 @@ for lay in range(1,total_layer_count):
 
 network_output = layer_list[-1]
 print('actual',network_output)
+
+
 
 ###validation - print out what the network views as each
 a_list = []

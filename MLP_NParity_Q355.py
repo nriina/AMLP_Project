@@ -64,7 +64,7 @@ hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 50000
+epoch_count = 5000
 l_rate = 0.1
 
 #special parameters
@@ -73,6 +73,7 @@ if astro_status == True:
 
 
     start_vals = np.random.random(3)
+    start_vals[2] = 1
     # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
 
     backpropastro = False #follows backpropogation derivation in paper appendix (normal backprop using the hidden unit weights and activation rule, but with acstrocite activity)

@@ -41,7 +41,7 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-n = 6
+n = 8
 dataset = Nparity_dataset(N= n)
 dataset.populate()
 
@@ -57,11 +57,11 @@ hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 1000
-l_rate = 0.1
+epoch_count = 2000
+l_rate = 0.01
 
 
-batch_number = 10
+batch_number = 30
 current_batch = 0
 batches = []
 #special parameters
@@ -216,8 +216,10 @@ max_sse = 1
 for sse in batches:
     if sse < max_sse:
         max_sse = sse
+std = np.std(batches)
 
 print('average sse', average)
+print('standard deviation', std)
 print('best sse', max_sse)
 
 
