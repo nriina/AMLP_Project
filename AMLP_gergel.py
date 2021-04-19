@@ -108,7 +108,7 @@ class AAN(): #artificial astrocyte network
             self.apply_limits()
 
     def compute_activation_theta(self):
-        self.act_count +=1
+        self.act_count +=1 #keeps track of how many times compute activation has been called for the averaging process
         for row in range(0,len(self.input)):
             for astro in range(0,len(self.input[row])): #input for each n should be the activation of that neuron
                 if self.input[row][astro] >= self.threshold[row][astro]:
@@ -160,10 +160,8 @@ class AAN(): #artificial astrocyte network
         if self.backprop == True:
             self.apply_limits()
     
-    def show_parameters(self):
-        # print('weights',self.weights)
-        # print('thresh',self.threshold)
-        # print('decay',self.decay_rate)
+    def show_parameters(self, act_histogram = False, bar=False,histograms=True):
+
         x_range = 0
         weightlist = []
         thres_list = []
@@ -175,28 +173,91 @@ class AAN(): #artificial astrocyte network
                 dec_list.append(self.decay_rate[row][astro])
                 x_range +=1
                 
-        plt.subplot(1,3,1)
-        plt.title('Astrocytic weights')
-        # fig = plt.figure()
-        # plt.add_axes([0,0,1,1])
-        # langs = ['C', 'C++', 'Java', 'Python', 'PHP']
-        # students = [23,17,35,29,12]
-        # ax.bar(langs,students)
-        # plt.show()
-        plt.bar(x = range(0,x_range),height=weightlist)
-        # plt.show()
-        # plt.legend()
+        if bar == True:
+            plt.subplot(1,3,1)
+            plt.title('Astrocytic weights')
+            plt.bar(x = range(0,x_range),height=weightlist)
+    
+            plt.subplot(1,3,2)
+            plt.title('Astrocytic Thresholds')
+            plt.bar(height = thres_list, x = range(x_range))
+            # plt.legend
 
-        plt.subplot(1,3,2)
-        plt.title('Astrocytic Thresholds')
-        plt.bar(height = thres_list, x = range(x_range))
-        # plt.legend
+            plt.subplot(1,3,3)
+            plt.title('Astrocytic Decay')
+            plt.bar(height = dec_list, x = range(x_range))
+            # plt.legend
+            plt.show()
 
-        plt.subplot(1,3,3)
-        plt.title('Astrocytic Decay')
-        plt.bar(height = dec_list, x = range(x_range))
-        # plt.legend
-        plt.show()
+        #plot distribution of activity
+        if act_histogram == True:
+            activities = []
+            # for act in self.activity
+            for row in range(0,len(self.input)):
+                for astro in range(0,len(self.input[row])): #input for each n should be the activation of that neuron
+                    activities.append(self.activity[row][astro])
+                
+            # x = [21,22,23,4,5,6,77,8,9,10,31,32,33,34,35,36,37,18,49,50,100]
+            num_bins = 50
+            plt.title('Distribution of astrocyte activity')
+            n, bins, patches = plt.hist(activities, num_bins, facecolor='blue', alpha=0.5)
+            plt.xlabel('Astrocyte Activation')
+            plt.ylabel('Frequency')
+            plt.show()
+
+        if histograms == True:
+
+            activities = []
+            # for act in self.activity
+            for row in range(0,len(self.input)):
+                for astro in range(0,len(self.input[row])): #input for each n should be the activation of that neuron
+                    activities.append(self.activity[row][astro])
+            
+                
+            # x = [21,22,23,4,5,6,77,8,9,10,31,32,33,34,35,36,37,18,49,50,100]
+            num_bins = 40
+            
+            plt.subplot(1,4,1)
+            plt.suptitle('Distribution of Astro parameters')
+            plt.title('Weights')
+            # plt.bar(x = range(0,x_range),height=weightlist)
+
+            # plt.title('Distribution of astrocyte activity')
+            n, bins, patches = plt.hist(weightlist, num_bins, facecolor='blue', alpha=0.5)
+            # plt.xlabel('Astrocyte Weight')
+            plt.ylabel('Frequency')
+            # plt.show()
+
+            plt.subplot(1,4,2)
+            plt.title('Threshold')
+            # plt.bar(x = range(0,x_range),height=weightlist)
+
+            # plt.title('Distribution of astrocyte activity')
+            n, bins, patches = plt.hist(thres_list, num_bins, facecolor='blue', alpha=0.5)
+            # plt.xlabel('Astrocytic Treshold')
+            # plt.ylabel('Frequency')
+            # plt.show()
+
+            plt.subplot(1,4,3)
+            plt.title('Decay Rate')
+            # plt.bar(x = range(0,x_range),height=weightlist)
+
+            # plt.title('Distribution of astrocyte decay rate')
+            n, bins, patches = plt.hist(dec_list, num_bins, facecolor='blue', alpha=0.5)
+            # plt.xlabel('Astrocyte Decay Rate')
+            # plt.ylabel('Frequency')
+            # plt.show()
+
+            plt.subplot(1,4,4)
+            plt.title('Activity')
+            # plt.bar(x = range(0,x_range),height=weightlist)
+
+            # plt.title('Distribution of astrocyte decay rate')
+            n, bins, patches = plt.hist(activities, num_bins, facecolor='blue', alpha=0.5)
+            # plt.xlabel('Astrocyte decay rate')
+            # plt.ylabel('Frequency')
+            plt.show()
+
 
 if __name__ == "__main__":
     anne = AAN(initial_act=0)

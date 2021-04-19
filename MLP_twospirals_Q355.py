@@ -20,9 +20,17 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse):
+# def think(inputs, synapse):
+#     bias= -1
+#     return nonlin((np.dot(inputs,synapse)+ bias))
+
+def think(inputs, synapse, noise = False):
     bias= -1
-    return nonlin((np.dot(inputs,synapse)+ bias))
+    if noise == False:
+        return nonlin((np.dot(inputs,synapse)+ bias))
+    else:
+        nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
+        return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
 def think_astro(inputs, synapse):
     bias= -1
@@ -67,13 +75,18 @@ if astro_status == True:
     start_vals = np.random.random(3)
     start_vals[2] = 1
     # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
-    backpropastro = True
-    train_decay = True
-    train_threshold = True
+
+    backpropastro = False #follows backpropogation 
+    train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
+    train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
+
 
     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
     anne.set_parameters()
     # anne.show_parameters()
+    if backpropastro == True:
+        astro_l_rate = l_rate
+        
     
 
 

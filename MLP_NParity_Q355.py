@@ -18,9 +18,17 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse):
+# def think(inputs, synapse):
+#     bias= -1
+#     return nonlin((np.dot(inputs,synapse)+ bias))
+
+def think(inputs, synapse, noise = False):
     bias= -1
-    return nonlin((np.dot(inputs,synapse)+ bias))
+    if noise == False:
+        return nonlin((np.dot(inputs,synapse)+ bias))
+    else:
+        nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
+        return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
 def think_astro(inputs, synapse):
     bias= -1
@@ -40,7 +48,7 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-n = 6
+n = 4
 dataset = Nparity_dataset(N= n)
 dataset.populate()
 
@@ -53,24 +61,33 @@ output_y = dataset.Outputs
 
 #network parameters
 hidden_layer_count = 1 #needs at least 1 hidden unit
-hidden_units = 20 #all hidden layers have the same amount
+hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 500
+epoch_count = 50000
 l_rate = 0.1
 
 #special parameters
 astro_status = True
 if astro_status == True:
 
+
     start_vals = np.random.random(3)
     # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
-    backpropastro = True
-    train_decay = True
-    train_threshold = True
+
+    backpropastro = False #follows backpropogation derivation in paper appendix (normal backprop using the hidden unit weights and activation rule, but with acstrocite activity)
+    train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
+    train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
+
 
     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
     anne.set_parameters()
+
+    if backpropastro == True:
+        astro_l_rate = l_rate
+
+    anne.show_parameters()
+        
     
 
 
@@ -186,7 +203,7 @@ for i in range(epoch_count):
                 # if synapse_count > 0:
                 if synapse_count < start_synapse_count:
                     astro_adjust = new_layer_error * anne.activity[synapse_count]                    
-                    anne.weights[synapse_count] += astro_adjust * l_rate
+                    anne.weights[synapse_count] += astro_adjust * astro_l_rate
 
     
 
@@ -199,6 +216,8 @@ for i in range(epoch_count):
 ##plot that bitch's fitness over time
 plt.plot(SSE_Plot)
 plt.show()
+
+anne.show_parameters()
 
 #trial
 trial_num = np.random.random_integers(low=0, high=train_unit_count)

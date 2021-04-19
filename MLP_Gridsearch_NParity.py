@@ -94,6 +94,10 @@ if astro_status == True:
 
                     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
                     anne.set_parameters()
+
+                    if backpropastro == True:
+                        astro_l_rate = l_rate
+        
                     
 
                     syn_list = []
