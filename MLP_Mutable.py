@@ -83,6 +83,7 @@ for i in range(epoch_count):
 
     for train_unit_count in range(0, int(len(input_x))-1):
 
+        current_sse = 0
 
   
         train_unit = input_x[train_unit_count]
@@ -104,7 +105,9 @@ for i in range(epoch_count):
 
         epoch_error += net_error
 
-        sse_perepoch += SSE(layer_list[-1],output_y[train_unit_count])
+        current_sse = SSE(layer_list[-1],output_y[train_unit_count])
+        sse_perepoch += current_sse
+        
         ####################adjust weights - something is broken in here
         final_delta = net_error * nonlin(layer_list[-1], derive= True)
         delta_list = []

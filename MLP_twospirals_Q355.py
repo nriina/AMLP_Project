@@ -67,13 +67,13 @@ if astro_status == True:
     start_vals = np.random.random(3)
     start_vals[2] = 1
     # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
-    backpropastro = False
+    backpropastro = True
     train_decay = True
     train_threshold = True
 
     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
     anne.set_parameters()
-    anne.show_parameters()
+    # anne.show_parameters()
     
 
 
@@ -181,6 +181,12 @@ for i in range(epoch_count):
             delta_list.append(np.asarray(next_delta))
 
             synapse_count -= 1
+
+            if anne.backprop == True:
+
+                if synapse_count < start_synapse_count:
+                    astro_adjust = new_layer_error * anne.activity[synapse_count]                    
+                    anne.weights[synapse_count] += astro_adjust * l_rate
 
     
 

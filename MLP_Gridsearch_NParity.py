@@ -56,14 +56,14 @@ hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = 20 #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 5
+epoch_count = 1500
 l_rate = 0.1
 
 weight_iterations = [-1.00, -0.78, -0.56, -0.33, -0.11, 0.11, 0.33, 0.56, 0.78, 1.00]
 decay_iterations = [0.01, 0.12, 0.23, 0.34, 0.45, 0.55, 0.66, 0.77, 0.88, 0.99]
 thresh_iterations = [0.10, 0.19, 0.28, 0.37, 0.46, 0.54, 0.63, 0.72, 0.81, 0.90]
 
-iterations = 3
+iterations = 5
 
 vegetables_list = []
 farmers_list = []
@@ -196,6 +196,12 @@ if astro_status == True:
 
                                 synapse_count -= 1
 
+                                if anne.backprop == True:
+
+                                    if synapse_count < start_synapse_count:
+                                        astro_adjust = new_layer_error * anne.activity[synapse_count]                    
+                                        anne.weights[synapse_count] += astro_adjust * l_rate
+
                         
 
                         SSE_Plot.append(sse_perepoch / train_unit_count) #find running average SSE
@@ -213,11 +219,14 @@ if astro_status == True:
                 for ss in range(len(it_list)):
                     average_sse += it_list[ss]
                     average_sse = average_sse / len(it_list)
-                thresh_list.append(average_sse)
+                # thresh_list.append(average_sse)
+                thresh_list.append( 1 - average_sse) #change to accuracy
                 # print('threshlist',thresh_list)
             decay_list.append(thresh_list)
 
-    weight_graphs.append(np.array(decay_list))
+        weight_graphs.append(np.array(decay_list))
+
+
     ### plot code from https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
     # vegetables = ["cucumber", "tomato", "lettuce", "asparagus",
     #               "potato", "wheat", "barley"]
@@ -233,40 +242,82 @@ if astro_status == True:
     #                     [1.3, 1.2, 0.0, 0.0, 0.0, 3.2, 5.1],
     #                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
 
-for weight_name in range(len(weight_iterations)):
-    vegetables = decay_iterations
-    farmers = thresh_iterations
-    # harvest = np.array(decay_list)
-    harvest = weight_graphs[weight_name]
-    # weight_graphs.append(harvest)
-    print('harvest',harvest)
-    # print('threshlist',thresh_list)
-        # print('decay list',decay_list)
+# for weight_name in range(len(weight_iterations)):
+#     
+#     # harvest = np.array(decay_list)
+#     harvest = weight_graphs[weight_name]
+#     # weight_graphs.append(harvest)
+#     print('harvest',harvest)
+#     # print('threshlist',thresh_list)
+#         # print('decay list',decay_list)
 
 
-    fig, ax = plt.subplots(len(weight_iterations), 1, weight_name)
-    im = ax.imshow(harvest)
+    # fig, ax = plt.subplots(len(weight_iterations), 1, weight_name+1)
+
+fig, axs = plt.subplots(1,len(weight_iterations))
+
+vegetables = decay_iterations
+farmers = thresh_iterations
+
+
+for weight_g in range(len(weight_graphs)):
+    # print('weight graph',weight_graphs[weight_g])
+    axs[weight_g].imshow(weight_graphs[weight_g])
+    axs[weight_g].set_title('weight'+str(weight_iterations[weight_g]))
 
     # We want to show all ticks...
-    ax.set_xticks(np.arange(len(farmers)))
-    ax.set_yticks(np.arange(len(vegetables)))
+    axs[weight_g].set_xticks(np.arange(len(farmers)))
+    axs[weight_g].set_yticks(np.arange(len(vegetables)))
     # ... and label them with the respective list entries
-    ax.set_xticklabels(farmers)
-    ax.set_yticklabels(vegetables)
+    axs[weight_g].set_xticklabels(farmers)
+    axs[weight_g].set_yticklabels(vegetables)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+    plt.setp(axs[weight_g].get_xticklabels(), rotation=45, ha="right",
             rotation_mode="anchor")
 
-    # Loop over data dimensions and create text annotations.
-    # for i in range(len(vegetables)):
-    #     for j in range(len(farmers)):
-    #         text = ax.text(j, i, harvest[i, j],
-    #                        ha="center", va="center", color="w")
-
-    ax.set_title("gridsearch for weight" + str(weight))
-    fig.tight_layout()
 plt.show()
+
+best = 0
+best_it = [0,0,0]
+for ite in range(len(weight_graphs)):
+    for decl in range(len(weight_graphs[ite])):
+        for wait in range(len(weight_graphs[ite][decl])):
+            print('wait',wait)
+            print('wait entry',weight_graphs[ite][decl][wait])
+            if weight_graphs[ite][decl][wait] > best:
+                best = weight_graphs[ite][decl][wait]
+                best_it[0] = wait #which thresh
+                best_it[1] = decl #which decay
+                best_it[2] = ite #which number of wait iteration
+
+print('best sse',best)
+print('best combo:',  weight_iterations[best_it[0]])
+print('best combo1:',  decay_iterations[best_it[1]])
+print('best combo2:',thresh_iterations[best_it[2]])
+
+
+# im = axs[0].imshow(harvest)
+# # We want to show all ticks...
+# im.set_xticks(np.arange(len(farmers)))
+# ax.set_yticks(np.arange(len(vegetables)))
+# # ... and label them with the respective list entries
+# ax.set_xticklabels(farmers)
+# ax.set_yticklabels(vegetables)
+
+# # Rotate the tick labels and set their alignment.
+# plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+#         rotation_mode="anchor")
+
+#     # Loop over data dimensions and create text annotations.
+#     # for i in range(len(vegetables)):
+#     #     for j in range(len(farmers)):
+#     #         text = ax.text(j, i, harvest[i, j],
+#     #                        ha="center", va="center", color="w")
+
+# ax.set_title("gridsearch for weight" + str(weight_iterations[weight_name]))
+# fig.tight_layout()
+# plt.show()
 
 
 

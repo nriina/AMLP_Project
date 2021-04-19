@@ -63,8 +63,8 @@ l_rate = 0.1
 astro_status = True
 if astro_status == True:
 
-    # start_vals = np.random.random(3)
-    start_vals = [0.5,0.5,1] #[decay, threshold, weight]
+    start_vals = np.random.random(3)
+    # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
     backpropastro = True
     train_decay = True
     train_threshold = True
@@ -181,6 +181,13 @@ for i in range(epoch_count):
 
             synapse_count -= 1
 
+            if anne.backprop == True:
+                # print('attempting backprop')
+                # if synapse_count > 0:
+                if synapse_count < start_synapse_count:
+                    astro_adjust = new_layer_error * anne.activity[synapse_count]                    
+                    anne.weights[synapse_count] += astro_adjust * l_rate
+
     
 
     SSE_Plot.append(sse_perepoch / train_unit_count) #find running average SSE
@@ -194,7 +201,7 @@ plt.plot(SSE_Plot)
 plt.show()
 
 #trial
-trial_num = 0
+trial_num = np.random.random_integers(low=0, high=train_unit_count)
 trial_output = output_y[trial_num]
 print('target', trial_output)
 
