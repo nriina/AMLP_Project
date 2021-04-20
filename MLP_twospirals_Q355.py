@@ -49,10 +49,10 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-dataset = two_spirals(size=150)
+dataset = two_spirals(size=100)
 dataset.set_spirals()
 dataset.string_toscaler()
-
+# dataset.plot_spirals()
 dataset.test_train_split(0.7)
 
 # input_x = dataset.x
@@ -60,12 +60,6 @@ input_x = dataset.train_x
 
 # output_y = dataset.y
 output_y = dataset.train_y
-
-print('len total',len(dataset.x))
-print('len train',len(dataset.train_x))
-print('len test',len(dataset.test_x))
-# print('train_x[-1',input_x[-1])
-# print('test 1',dataset.test_x[0])
 
 #network parameters
 hidden_layer_count = 1 #needs at least 1 hidden unit
@@ -94,13 +88,6 @@ if astro_status == True:
     if backpropastro == True:
         astro_l_rate = l_rate
         
-    
-
-
-
-
-##
-
 
 syn_list = []
 syn01 = 2*np.random.random(((len(input_x[0])),hidden_units)) -1

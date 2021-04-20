@@ -1,0 +1,21 @@
+
+Properties not utilized in mlp
+
+time delay - takes time to activate
+
+propogation to nearbye astrocytes - are not local units
+
+types of things a network may benefit from as a result:
+
+(old - dead neurons brought back to life, also helps avoid local minima by providing adjustable noise)
+
+new - can propogate signals between neurons not necessarily connected
+ - try and create network states? - when to beat fast and when to beat slow based on an external cue
+
+- allow more activity out of a single neuron - increased complexity
+
+- allow for storage of information for longer? like a wave in the astrocytes don't go up or down too fast as a result of neural activity, this could keep informaiton that is super relevant in the network for more time
+
+- could help evolution find optimal solutions by making less solutions where neurons are just dead?
+
+- would it add stochasticity?

@@ -41,7 +41,7 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-n = 8
+n = 4
 dataset = Nparity_dataset(N= n)
 dataset.populate()
 
@@ -57,29 +57,30 @@ hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 2000
-l_rate = 0.01
+epoch_count = 10000
+l_rate = 0.1
 
 
-batch_number = 30
+batch_number = 100
 current_batch = 0
 batches = []
 #special parameters
-astro_status = True
+astro_status = False
+backpropastro = False
 if astro_status == True:
 
     # start_vals = np.random.random(3)
     ## random
-    start_vals = list(np.random.random(2))
-    start_vals.append(1.0)
+    # start_vals = list(np.random.random(2))
+    # start_vals.append(1.0)
 
     #set manually
-    # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
+    start_vals = [0.5,0.5,-0.5] #[decay, threshold, weight]
 
 
     backpropastro = False #follows backpropogation 
-    train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
-    train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
+    train_decay = False #trained by setting value to inverse of average activity of corresponding astro (each individually)
+    train_threshold = False #trained by setting value to running average of corresponding astro activity (each have their own)
 
     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
     anne.set_parameters()
@@ -195,7 +196,7 @@ while current_batch < batch_number:
 
                 synapse_count -= 1
 
-                if anne.backprop == True:
+                if backpropastro == True:
                     if synapse_count < start_synapse_count:
                         astro_adjust = new_layer_error * anne.activity[synapse_count]                    
                         anne.weights[synapse_count] += astro_adjust * l_rate
@@ -217,7 +218,7 @@ for sse in batches:
     if sse < max_sse:
         max_sse = sse
 std = np.std(batches)
-
+print('n',n)
 print('average sse', average)
 print('standard deviation', std)
 print('best sse', max_sse)
