@@ -40,7 +40,7 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-n = 6
+n = 8
 dataset = Nparity_dataset(N= n)
 dataset.populate()
 
@@ -53,11 +53,13 @@ output_y = dataset.Outputs
 
 #network parameters
 hidden_layer_count = 1 #needs at least 1 hidden unit
-hidden_units = 20 #all hidden layers have the same amount
+hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
 epoch_count = 1500
 l_rate = 0.1
+
+#best combo: [0.1, 0.11, 0.01], best sse 0.9346685300687123
 
 weight_iterations = [-1.00, -0.78, -0.56, -0.33, -0.11, 0.11, 0.33, 0.56, 0.78, 1.00]
 decay_iterations = [0.01, 0.12, 0.23, 0.34, 0.45, 0.55, 0.66, 0.77, 0.88, 0.99]
@@ -276,9 +278,9 @@ for weight_g in range(len(weight_graphs)):
     axs[weight_g].set_xticklabels(farmers)
     axs[weight_g].set_yticklabels(vegetables)
 
-    # Rotate the tick labels and set their alignment.
-    plt.setp(axs[weight_g].get_xticklabels(), rotation=45, ha="right",
-            rotation_mode="anchor")
+    # # Rotate the tick labels and set their alignment.
+    # plt.setp(axs[weight_g].get_xticklabels(), rotation=45, ha="right",
+    #         rotation_mode="anchor")
 
 plt.show()
 
@@ -287,8 +289,8 @@ best_it = [0,0,0]
 for ite in range(len(weight_graphs)):
     for decl in range(len(weight_graphs[ite])):
         for wait in range(len(weight_graphs[ite][decl])):
-            print('wait',wait)
-            print('wait entry',weight_graphs[ite][decl][wait])
+            # print('wait',wait)
+            # print('wait entry',weight_graphs[ite][decl][wait])
             if weight_graphs[ite][decl][wait] > best:
                 best = weight_graphs[ite][decl][wait]
                 best_it[0] = wait #which thresh
@@ -296,9 +298,9 @@ for ite in range(len(weight_graphs)):
                 best_it[2] = ite #which number of wait iteration
 
 print('best sse',best)
-print('best combo:',  weight_iterations[best_it[0]])
-print('best combo1:',  decay_iterations[best_it[1]])
-print('best combo2:',thresh_iterations[best_it[2]])
+print('best combo thresh:',  weight_iterations[best_it[0]])
+print('best combo1 decl:',  decay_iterations[best_it[1]])
+print('best combo2 wait:',thresh_iterations[best_it[2]])
 
 
 # im = axs[0].imshow(harvest)

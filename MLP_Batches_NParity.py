@@ -41,7 +41,7 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-n = 4
+n = 6
 dataset = Nparity_dataset(N= n)
 dataset.populate()
 
@@ -65,20 +65,21 @@ batch_number = 100
 current_batch = 0
 batches = []
 #special parameters
-astro_status = False
-backpropastro = False
+astro_status = True
+# backpropastro = False
 if astro_status == True:
 
     # start_vals = np.random.random(3)
     ## random
     # start_vals = list(np.random.random(2))
-    # start_vals.append(1.0)
+    # start_vals.append(0.11)
 
     #set manually
-    start_vals = [0.5,0.5,-0.5] #[decay, threshold, weight]
+    start_vals = [0.01,0.1,0.11] #[decay, threshold, weight]
+    start_vals[2] = np.random.random() #between 0 and 1
 
 
-    backpropastro = False #follows backpropogation 
+    backpropastro = True #follows backpropogation 
     train_decay = False #trained by setting value to inverse of average activity of corresponding astro (each individually)
     train_threshold = False #trained by setting value to running average of corresponding astro activity (each have their own)
 
@@ -223,34 +224,4 @@ print('average sse', average)
 print('standard deviation', std)
 print('best sse', max_sse)
 
-
-    # ##plot that fitness over time
-    # plt.plot(SSE_Plot)
-    # plt.show()
-
-
-# #trial
-# trial_num = 0
-# trial_output = output_y[trial_num]
-# print('target', trial_output)
-
-# #run value back through network
-# train_unit = input_x[trial_num]
-# train_unit = np.asarray(train_unit)
-# layer_list = []
-
-# new_unit = Flatt(train_unit)
-# new_unit = np.asarray(new_unit)
-
-
-# layer_list.append(new_unit.T)
-
-# for lay in range(1,total_layer_count):
-#     prev_layer = layer_list[lay-1]
-#     layer = think(prev_layer,syn_list[lay-1])
-#     layer_list.append(layer)
-
-
-# network_output = layer_list[-1]
-# print('actual',network_output)
 
