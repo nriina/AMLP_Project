@@ -73,20 +73,21 @@ output_y = dataset.Outputs
 
 #network parameters
 hidden_layer_count = 1 #needs at least 1 hidden unit
-hidden_units = n #all hidden layers have the same amount
+hidden_units = 2**n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 10000
+epoch_count = 1000
 l_rate = 0.1
 
 #special parameters
-astro_status = True
+astro_status = False
+backpropastro = False
 if astro_status == True:
 
 
-    # start_vals = np.random.random(3)
+    start_vals = np.random.random(3)
     # start_vals[2] = 1
-    start_vals = [0.5,0.5,-0.5] #[decay, threshold, weight]
+    # start_vals = [0.5,0.5,-0.5] #[decay, threshold, weight]
 
     backpropastro = False #follows backpropogation derivation in paper appendix (normal backprop using the hidden unit weights and activation rule, but with acstrocite activity)
     train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
@@ -99,7 +100,7 @@ if astro_status == True:
     if backpropastro == True:
         astro_l_rate = l_rate
 
-    anne.show_parameters()
+    # anne.show_parameters()
         
     
 
@@ -227,6 +228,7 @@ for i in range(epoch_count):
 
 
 ##plot that bitch's fitness over time
+print('final sse', SSE(layer_list[-1],output_y[train_unit_count]))
 plt.plot(SSE_Plot)
 plt.show()
 

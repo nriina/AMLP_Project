@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from Homemade_datasets import Nparity_dataset
+from Homemade_datasets import Nparity_dataset, two_spirals
 from AMLP_gergel import AAN
 
 def nonlin(x, derive = False):
@@ -40,15 +40,29 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-n = 8
-dataset = Nparity_dataset(N= n)
-dataset.populate()
+# n = 5
+# dataset = Nparity_dataset(N= n)
+# dataset.populate()
 
-input_x = dataset.X
+# input_x = dataset.X
 
-output_y = dataset.Outputs
+# output_y = dataset.Outputs
 
+########################################### 2 spirals load dataset
+################################### load dataset spirals
+dataset = two_spirals(size=100)
+dataset.set_spirals()
+dataset.string_toscaler()
+# dataset.plot_spirals()
+dataset.test_train_split(0.8)
 
+# input_x = dataset.x
+input_x = dataset.train_x
+
+# output_y = dataset.y
+output_y = dataset.train_y
+
+#################################3
 
 
 #network parameters
@@ -56,12 +70,12 @@ hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 1500
+epoch_count = 500
 l_rate = 0.1
 
 #best combo: [0.1, 0.11, 0.01], best sse 0.9346685300687123
 
-weight_iterations = [-1.00, -0.78, -0.56, -0.33, -0.11, 0.11, 0.33, 0.56, 0.78, 1.00]
+weight_iterations = [-1.00, -0.78, -0.56,-0.33, -0.11, 0.11, 0.33, 0.56, 0.78, 1.00]
 decay_iterations = [0.01, 0.12, 0.23, 0.34, 0.45, 0.55, 0.66, 0.77, 0.88, 0.99]
 thresh_iterations = [0.10, 0.19, 0.28, 0.37, 0.46, 0.54, 0.63, 0.72, 0.81, 0.90]
 
@@ -91,7 +105,7 @@ if astro_status == True:
 
 
                     backpropastro = False
-                    train_decay = False
+                    train_decay = True
                     train_threshold = False
 
                     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
@@ -262,26 +276,28 @@ if astro_status == True:
 
 fig, axs = plt.subplots(1,len(weight_iterations))
 
-vegetables = decay_iterations
-farmers = thresh_iterations
+# vegetables = decay_iterations
+# farmers = thresh_iterations
+vegetables = []
+farmers = []
 
-
+print('nparity redo mini')
 for weight_g in range(len(weight_graphs)):
     # print('weight graph',weight_graphs[weight_g])
     axs[weight_g].imshow(weight_graphs[weight_g])
-    axs[weight_g].set_title('weight'+str(weight_iterations[weight_g]))
+    axs[weight_g].set_title('Weight: '+str(weight_iterations[weight_g]))
 
     # We want to show all ticks...
     axs[weight_g].set_xticks(np.arange(len(farmers)))
     axs[weight_g].set_yticks(np.arange(len(vegetables)))
-    # ... and label them with the respective list entries
-    axs[weight_g].set_xticklabels(farmers)
-    axs[weight_g].set_yticklabels(vegetables)
+    # # ... and label them with the respective list entries
+    # axs[weight_g].set_xticklabels(farmers)
+    # axs[weight_g].set_yticklabels(vegetables)
 
-    # # Rotate the tick labels and set their alignment.
+    # Rotate the tick labels and set their alignment.
     # plt.setp(axs[weight_g].get_xticklabels(), rotation=45, ha="right",
     #         rotation_mode="anchor")
-
+    
 plt.show()
 
 best = 0
@@ -297,10 +313,10 @@ for ite in range(len(weight_graphs)):
                 best_it[1] = decl #which decay
                 best_it[2] = ite #which number of wait iteration
 
-print('best sse',best)
-print('best combo thresh:',  weight_iterations[best_it[0]])
+print('best sse for two spirals',best)
+print('best combo thresh:',  thresh_iterations[best_it[0]])
 print('best combo1 decl:',  decay_iterations[best_it[1]])
-print('best combo2 wait:',thresh_iterations[best_it[2]])
+print('best combo2 wait:',weight_iterations[best_it[2]])
 
 
 # im = axs[0].imshow(harvest)

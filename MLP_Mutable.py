@@ -16,7 +16,7 @@ def SSE(network, actual):
     return bigerror
 
 def think(inputs, synapse, noise = False):
-    bias= -1
+    bias= -0.1
     if noise == False:
         return nonlin((np.dot(inputs,synapse)+ bias))
     else:
@@ -71,7 +71,8 @@ for layer in range(0,hidden_layer_count-1):
 synoutput = 2* np.random.random((hidden_units,output_units))-1  # 2* -1 to center random values around 0
 syn_list.append(synoutput)
 
-
+# ### bias list
+# bias_list = 2*np.random.random((hidden_layer_count,hidden_units)) -1
 
 print('beginning testing, Epoch = 0/'+str(epoch_count))
 SSE_Plot = []

@@ -166,7 +166,7 @@ class two_spirals():
         self.train_x = self.x[:train_length]
         self.train_y = self.y[:train_length]
         self.test_x = self.x[train_length:]
-        self.test_y = self.x[train_length:]
+        self.test_y = self.y[train_length:]
             
 
 

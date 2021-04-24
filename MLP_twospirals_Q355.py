@@ -33,7 +33,7 @@ def think(inputs, synapse, noise = False):
         return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
 def think_astro(inputs, synapse):
-    bias= -1
+    bias= 0
     return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
@@ -49,35 +49,39 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-dataset = two_spirals(size=100)
+dataset = two_spirals(size=75)
 dataset.set_spirals()
 dataset.string_toscaler()
-# dataset.plot_spirals()
-dataset.test_train_split(0.7)
+dataset.plot_spirals()
+dataset.test_train_split(0.8)
 
 # input_x = dataset.x
 input_x = dataset.train_x
+validate_input = dataset.test_x
 
 # output_y = dataset.y
 output_y = dataset.train_y
-
+validate_output = dataset.test_y
 #network parameters
 hidden_layer_count = 1 #needs at least 1 hidden unit
-hidden_units = 50 #all hidden layers have the same amount
+hidden_units = 30 #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 100
-l_rate = 0.01
+epoch_count = 7000
+l_rate = 0.1
+compute_validation = False
+
 
 #special parameters
-astro_status = True
+astro_status = False
+backpropastro = False
 if astro_status == True:
 
     start_vals = np.random.random(3)
-    start_vals[2] = 1
+    # start_vals[2] = 1.0
     # start_vals = [0.5,0.5,1] #[decay, threshold, weight]
 
-    backpropastro = False #follows backpropogation 
+    backpropastro = True#follows backpropogation 
     train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
     train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
 
@@ -106,6 +110,7 @@ syn_list.append(synoutput)
 
 print('beginning testing, Epoch = 0/'+str(epoch_count))
 SSE_Plot = []
+vale_plot = []
 for i in range(epoch_count):
     epoch_error = np.zeros(output_units)
     epoch_error = epoch_error.reshape(1,output_units)
@@ -161,6 +166,64 @@ for i in range(epoch_count):
         epoch_error += net_error
         sse_perepoch += SSE(layer_list[-1],output_y[train_unit_count])
 
+        ############################# validation test
+        if compute_validation == True:
+            # if train_unit_count % 50 == True:
+            vale_sse = 0
+            val_sse_perepoch = 0
+            ##### validation accuracy with test dataset
+            for test_unit_count in range(0, int(len(validate_input))-1):  
+                    train_unit = validate_input[test_unit_count]
+                    train_unit = np.asarray(train_unit)
+                    layer_list = []
+
+                    new_unit = Flatt(train_unit)
+                    new_unit = np.asarray(new_unit)
+                
+
+                    layer_list.append(new_unit.T)
+
+                    for lay in range(1,total_layer_count):
+                        prev_layer = layer_list[lay-1]
+
+                        if astro_status == False:
+                            layer = think(prev_layer,syn_list[lay-1])
+                            layer_list.append(layer)
+
+                        else:
+                            layer = think_astro(prev_layer,syn_list[lay-1])
+
+                            if lay < (total_layer_count-1): #index is one less than total layer count
+                                anne.input[lay-1] = nonlin(layer)   #lay-1 because layer 1 for neuron is layer 0 for glia
+                                if train_decay == False:
+                                    if train_threshold == False: #both false
+                                        anne.compute_activation()
+                                    else: #decay false, threshold true
+                                        anne.compute_activation_theta()
+
+                                elif train_decay == True: 
+                                    if train_threshold == False: #decay true, threshold false
+                                        anne.compute_activation_decay()
+                                    else:
+                                        anne.compute_activation_all() #all true
+
+
+                                for n in range(0,len(layer)):
+                                    layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
+                            layer_list.append(nonlin(layer))
+
+
+                    #compute error
+                    # net_error = Error(layer_list[-1],validate_output[test_unit_count])
+                    # epoch_error += net_error
+                    val_sse_perepoch += SSE(layer_list[-1],validate_output[test_unit_count])
+
+            vale_sse = val_sse_perepoch / test_unit_count
+            vale_plot.append(vale_sse)
+            # print('vale sse',vale_sse)
+
+
+
         ####################adjust weights 
         final_delta = net_error * nonlin(layer_list[-1], derive= True)
         delta_list = []
@@ -189,7 +252,7 @@ for i in range(epoch_count):
 
             synapse_count -= 1
 
-            if anne.backprop == True:
+            if backpropastro == True:
 
                 if synapse_count < start_synapse_count:
                     astro_adjust = new_layer_error * anne.activity[synapse_count]                    
@@ -204,8 +267,14 @@ for i in range(epoch_count):
 
 
 ##plot that bitch's fitness over time
-plt.plot(SSE_Plot)
+print('final sse', SSE(layer_list[-1],output_y[train_unit_count]))
+plt.plot(SSE_Plot, label = 'SSE')
+# plt.plot(vale_plot, label='validation sse')
 plt.show()
+if compute_validation == True:
+    plt.plot(vale_plot)
+    plt.title('validation sse')
+    plt.show()
 
 #trial
 trial_num = 0
@@ -232,8 +301,57 @@ for lay in range(1,total_layer_count):
 network_output = layer_list[-1]
 print('actual',network_output)
 
+vale_sse = 0
+val_sse_perepoch = 0
+##### validation accuracy with test dataset
+for test_unit_count in range(0, int(len(validate_input))-1):  
+        train_unit = validate_input[test_unit_count]
+        train_unit = np.asarray(train_unit)
+        layer_list = []
+
+        new_unit = Flatt(train_unit)
+        new_unit = np.asarray(new_unit)
+    
+
+        layer_list.append(new_unit.T)
+
+        for lay in range(1,total_layer_count):
+            prev_layer = layer_list[lay-1]
+
+            if astro_status == False:
+                layer = think(prev_layer,syn_list[lay-1])
+                layer_list.append(layer)
+
+            else:
+                layer = think_astro(prev_layer,syn_list[lay-1])
+
+                if lay < (total_layer_count-1): #index is one less than total layer count
+                    anne.input[lay-1] = nonlin(layer)   #lay-1 because layer 1 for neuron is layer 0 for glia
+                    if train_decay == False:
+                        if train_threshold == False: #both false
+                            anne.compute_activation()
+                        else: #decay false, threshold true
+                            anne.compute_activation_theta()
+
+                    elif train_decay == True: 
+                        if train_threshold == False: #decay true, threshold false
+                            anne.compute_activation_decay()
+                        else:
+                            anne.compute_activation_all() #all true
 
 
+                    for n in range(0,len(layer)):
+                        layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
+                layer_list.append(nonlin(layer))
+
+
+        #compute error
+        # net_error = Error(layer_list[-1],validate_output[test_unit_count])
+        # epoch_error += net_error
+        val_sse_perepoch += SSE(layer_list[-1],validate_output[test_unit_count])
+
+vale_sse = val_sse_perepoch / test_unit_count
+print('vale sse',vale_sse)
 ###validation - print out what the network views as each
 a_list = []
 b_list = []
@@ -243,14 +361,14 @@ bx_list = []
 by_list = []
 both_list = []
 # for point in input_x:
-for train_unit_count in range(0, int(len(input_x))-1):
+for val_unit_count in range(0, int(len(dataset.x))-1):
 
-        point = input_x[train_unit_count]
-        train_unit = input_x[train_unit_count]
-        train_unit = np.asarray(train_unit)
+        point = dataset.x[val_unit_count]
+        val_unit = dataset.x[val_unit_count]
+        val_unit = np.asarray(val_unit)
         layer_list = []
 
-        new_unit = Flatt(train_unit)
+        new_unit = Flatt(val_unit)
         new_unit = np.asarray(new_unit)
     
 

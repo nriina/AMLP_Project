@@ -7,7 +7,7 @@ import random
 class AAN(): #artificial astrocyte network
  
     # def __init__(self,size = (1,2),decay_rate = [0.8,0.7], threshold = [0.8,0.8], initial_act = [0.3,0.3]):
-    def __init__(self,size = (2,10),decay_rate = 0.8, threshold = 0.8, initial_act = 0.0, stable = True, weight=0.5, learning_duration = 2, backprop_status= False):
+    def __init__(self,size = (2,10),decay_rate = 0.8, threshold = 0.8, initial_act = 0.0, stable = True, weight=0.5, learning_duration = 2, backprop_status= False,learn_rule = 1):
         self.size = size
         self.input = np.zeros(size) #input from synapse
         self.output = np.zeros(size) #astrotrasmitter back into synapse
@@ -24,6 +24,8 @@ class AAN(): #artificial astrocyte network
         self.weights = np.ones(size) #weights
         self.learning_dur = learning_duration
         self.backprop = backprop_status
+        self.learn_rate = 0.1
+        self.learn_rule = learn_rule
 
         # self.trial_count = 0 #keep track of trials for learning
         self.thresh_learn = 0.1
@@ -117,9 +119,16 @@ class AAN(): #artificial astrocyte network
                     self.activity[row][astro] = self.activity[row][astro] * self.decay_rate[row][astro]
 
                 self.act_history[row][astro] += self.activity[row][astro]
-                
+
+                average_act = (self.act_history[row][astro] / self.act_count)
                 # print('lenth act history',len(self.act_history[row][astro]))
-                self.threshold[row][astro] = (self.act_history[row][astro] / self.act_count)
+                # self.threshold[row][astro] = (self.act_history[row][astro] / self.act_count)
+                if self.learn_rule == 1:
+                    self.threshold[row][astro] = average_act
+                ## second update rule
+                else:
+                    self.threshold[row][astro] = self.threshold[row][astro] + (self.learn_rate * (average_act - self.threshold[row][astro]))
+
                 # self.threshold[row][astro] = self.threshold[row][astro] + self.thresh_learn * (self.activity[row][astro] - self.threshold[row][astro])
         if self.backprop == True:
             self.apply_limits()
@@ -136,7 +145,12 @@ class AAN(): #artificial astrocyte network
                 self.act_history[row][astro] += self.activity[row][astro]
                 
                 # print('lenth act history',len(self.act_history[row][astro]))
-                self.decay_rate[row][astro] = 1 - (self.act_history[row][astro] / self.act_count)
+                average_act = (self.act_history[row][astro] / self.act_count)
+                # self.decay_rate[row][astro] = 1 - (self.act_history[row][astro] / self.act_count)
+                if self.learn_rule == 1:
+                    self.decay_rate[row][astro] = 1 - average_act
+                else:
+                    self.decay_rate[row][astro] = self.decay_rate[row][astro] + (self.learn_rate*((1 - average_act) - self.decay_rate[row][astro]))
                 # self.threshold[row][astro] = self.activity[row][astro]
                 # self.decay_rate[row][astro] = 1 - (self.activity[row][astro])
         if self.backprop == True:
@@ -155,8 +169,13 @@ class AAN(): #artificial astrocyte network
                 
                 # print('lenth act history',len(self.act_history[row][astro]))
                 average_act = (self.act_history[row][astro] / self.act_count)
-                self.decay_rate[row][astro] = 1 - (average_act)
-                self.threshold[row][astro] = average_act
+                if self.learn_rule ==1:
+                    self.decay_rate[row][astro] = 1 - (average_act)
+                    self.threshold[row][astro] = average_act
+                else:
+                    self.decay_rate[row][astro] = self.decay_rate[row][astro] + (self.learn_rate*((1 - average_act) - self.decay_rate[row][astro]))
+                    self.threshold[row][astro] = self.threshold[row][astro] + (self.learn_rate * ((self.act_history[row][astro] / self.act_count) - self.threshold[row][astro]))
+
         if self.backprop == True:
             self.apply_limits()
     
