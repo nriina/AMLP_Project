@@ -20,20 +20,16 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-# def think(inputs, synapse):
-#     bias= -1
-#     return nonlin((np.dot(inputs,synapse)+ bias))
-
 def think(inputs, synapse, noise = False):
-    bias= -1
+    bias= -1.0
     if noise == False:
         return nonlin((np.dot(inputs,synapse)+ bias))
     else:
         nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
         return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
-def think_astro(inputs, synapse):
-    bias= 0
+def think_astro(inputs, synapse): #no nonlin function
+    bias= -1.0
     return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
@@ -88,7 +84,7 @@ if astro_status == True:
 
     anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
     anne.set_parameters()
-    # anne.show_parameters()
+    # anne.show_parameters() #plot astrocyte parameters before training
     if backpropastro == True:
         astro_l_rate = l_rate
         
@@ -105,8 +101,6 @@ for layer in range(0,hidden_layer_count-1):
 
 synoutput = 2* np.random.random((hidden_units,output_units))-1  # 2* -1 to center random values around 0
 syn_list.append(synoutput)
-
-
 
 print('beginning testing, Epoch = 0/'+str(epoch_count))
 SSE_Plot = []
@@ -212,16 +206,10 @@ for i in range(epoch_count):
                                     layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
                             layer_list.append(nonlin(layer))
 
-
-                    #compute error
-                    # net_error = Error(layer_list[-1],validate_output[test_unit_count])
-                    # epoch_error += net_error
                     val_sse_perepoch += SSE(layer_list[-1],validate_output[test_unit_count])
 
             vale_sse = val_sse_perepoch / test_unit_count
             vale_plot.append(vale_sse)
-            # print('vale sse',vale_sse)
-
 
 
         ####################adjust weights 
@@ -266,40 +254,15 @@ for i in range(epoch_count):
         print('average_sse', sse_perepoch / train_unit_count)
 
 
-##plot that bitch's fitness over time
+##plotfitness over time
 print('final sse', SSE(layer_list[-1],output_y[train_unit_count]))
 plt.plot(SSE_Plot, label = 'SSE')
-# plt.plot(vale_plot, label='validation sse')
+# plt.plot(vale_plot, label='validation sse') #commented out because less datapoints in validation
 plt.show()
 if compute_validation == True:
     plt.plot(vale_plot)
     plt.title('validation sse')
     plt.show()
-
-#trial
-trial_num = 0
-trial_output = output_y[trial_num]
-print('target', trial_output)
-
-#run value back through network
-train_unit = input_x[trial_num]
-train_unit = np.asarray(train_unit)
-layer_list = []
-
-new_unit = Flatt(train_unit)
-new_unit = np.asarray(new_unit)
-
-
-layer_list.append(new_unit.T)
-
-for lay in range(1,total_layer_count):
-    prev_layer = layer_list[lay-1]
-    layer = think(prev_layer,syn_list[lay-1])
-    layer_list.append(layer)
-
-
-network_output = layer_list[-1]
-print('actual',network_output)
 
 vale_sse = 0
 val_sse_perepoch = 0
@@ -344,15 +307,11 @@ for test_unit_count in range(0, int(len(validate_input))-1):
                         layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
                 layer_list.append(nonlin(layer))
 
-
-        #compute error
-        # net_error = Error(layer_list[-1],validate_output[test_unit_count])
-        # epoch_error += net_error
         val_sse_perepoch += SSE(layer_list[-1],validate_output[test_unit_count])
 
 vale_sse = val_sse_perepoch / test_unit_count
 print('vale sse',vale_sse)
-###validation - print out what the network views as each
+###validation - print out what the network sees in final state
 a_list = []
 b_list = []
 ax_list = []
@@ -360,7 +319,6 @@ ay_list = []
 bx_list = []
 by_list = []
 both_list = []
-# for point in input_x:
 for val_unit_count in range(0, int(len(dataset.x))-1):
 
         point = dataset.x[val_unit_count]
@@ -420,18 +378,12 @@ print('b len',len(b_list))
 for pt in a_list:
     ax_list.append(pt[0])
     ay_list.append(pt[1])
-# ax_lista_list[0])
-# ay_list.append(a_list[1])
 for pit in b_list:
     bx_list.append(pit[0])
     by_list.append(pit[1])
 plt.scatter(ax_list,ay_list, label = 'a')
 plt.scatter(bx_list,by_list,label = 'b')
-# plt.plot(a_list, label = 'a')
-# plt.plot(b_list, label = 'b')
 plt.show()
-        # both_list.append[layer_list[-1]]
-
 anne.show_parameters()
 
 

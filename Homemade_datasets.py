@@ -4,7 +4,6 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import random
-# import conx as cx
 
 class Nparity_dataset():
 
@@ -21,7 +20,6 @@ class Nparity_dataset():
         
     def populate(self):
         for i in range(0,self.size):
-            # self.X.append(np.zeros(self.size))
             instance = np.random.randint(2, size=self.N)
             self.X.append(list(instance))
             count = 0
@@ -34,52 +32,8 @@ class Nparity_dataset():
                 self.Outputs.append([0])
             
         print('size',self.size)
-    #     print(train_count)
         print('len of x',len(self.X))   
     
-
-
-
-class four_to_one_MUX(): # [b a D C B A] rule from https://www.electronics-tutorials.ws/combination/comb_2.html
-
-    def __init__(self, size = 1):
-        self.x = []
-        self.y = []
-        self.train_x = []
-        self.train_y = []
-        self.valid_x = []
-        self.valid_y = []
-        self.size = size
-    
-    def calc_output(self,instance):
-        output = 0
-        # print('instnace[0',instance[0])
-        if instance[0] == 0:
-            if instance[1] == 0:
-                output = instance[-1]
-            
-            elif instance[1] == 1:
-                output = instance[-2]
-        
-        elif instance[0] == 1:
-            if instance[1] == 0:
-                output = instance[3]
-            elif instance[1] == 1:
-                output = instance[2]
-        return [output]
-
-
-    def populate(self):
-        for i in range(0,self.size):
-            self.x.append(list(np.random.randint(2, size=6))) #fill x with random 1 and 0s
-        
-        for j in range(0,self.size): #calculate appropraite y from 
-            instance = self.x[j]
-            # print('instnace',instance)
-            output = self.calc_output(instance)
-            # print('output',output)
-            self.y.append(output)
-
 
 class two_spirals():
     def __init__(self,size = 30): #size is for amount of points for each
@@ -93,10 +47,9 @@ class two_spirals():
         self.train_y = []
         self.test_x = []
         self.text_y = []
-        # self.spiral_num = spiral_num
         pass
 
-    def spiral_xy(self, i, spiral_num): #code from https://conx.readthedocs.io/en/latest/Two-Spirals.html
+    def spiral_xy(self, i, spiral_num): # mathcode from https://conx.readthedocs.io/en/latest/Two-Spirals.html
         """
         Create the data for a spiral.
 
@@ -105,7 +58,7 @@ class two_spirals():
             spiral_num is 1 or -1
         """
         φ = i/16 * math.pi
-        r = 6.5 * ((104 - i)/104)
+        r = 6.5 * ((70 - i)/70) #104
         x = (r * math.cos(φ) * spiral_num)/13 + 0.5
         y = (r * math.sin(φ) * spiral_num)/13 + 0.5
         return (x, y)
@@ -116,12 +69,8 @@ class two_spirals():
     def set_spirals(self):
         self.a = ["A", self.spiral(1)]
         self.b = ["B", self.spiral(-1)]
-        # print('len a', len(self.a[1]))
-        # print('len b', len(self.b[1]))
-        #want an x with all the datapoints, and a y that matches it, but what if we do it like n parity, where the output is generated from the x, so put the x's together, mix the tuples, and then assign output
         total_list = self.a[1] + self.b[1]
         self.x = random.sample(total_list, len(total_list))
-        # print('x',len(self.x))
         for dp in range(0,len(self.x)):
             if self.x[dp] in self.a[1]:
                 self.Outputs.append(self.a[0])
@@ -138,15 +87,12 @@ class two_spirals():
             elif value == 'B':
                 datapoint.append([1])
             else:
-                'unknown value'
+                print('unknown value')
         self.y = datapoint
         return datapoint
-        # print('len y',self.y[0:5])
 
-        # self.y = en y 
 
     def plot_spirals(self):
-        # print(a[1])
         x_list = []
         y_list = []
         bx_list = []
@@ -170,40 +116,68 @@ class two_spirals():
             
 
 
+#didn't end up using this, on a different paper
+
+class four_to_one_MUX(): # [b a D C B A] rule from https://www.electronics-tutorials.ws/combination/comb_2.html
+
+    def __init__(self, size = 1):
+        self.x = []
+        self.y = []
+        self.train_x = []
+        self.train_y = []
+        self.valid_x = []
+        self.valid_y = []
+        self.size = size
+    
+    def calc_output(self,instance):
+        output = 0
+        if instance[0] == 0:
+            if instance[1] == 0:
+                output = instance[-1]
+            
+            elif instance[1] == 1:
+                output = instance[-2]
+        elif instance[0] == 1:
+            if instance[1] == 0:
+                output = instance[3]
+            elif instance[1] == 1:
+                output = instance[2]
+        return [output]
 
 
+    def populate(self):
+        for i in range(0,self.size):
+            self.x.append(list(np.random.randint(2, size=6))) #fill x with random 1 and 0s
+        for j in range(0,self.size): #calculate appropraite y from 
+            instance = self.x[j]
+            output = self.calc_output(instance)
+            self.y.append(output)
+
+
+
+
+#didn't end up using, for a different paper
 class Chaos_time():
     def __init__(self):
         self.phi_map = []
         pass
-
     def skew_map(self,a, duration, initial_val=0.43):
         # initial_value = initial_val
         φ = [initial_val] #holds y axis of time series
         for i in range(0,duration):
-            # print('i',i)
             past_φ = φ[i]
             len_phi = len(φ)
-            # print('past',past_φ)
             if past_φ > 1:
                 past_φ = 0.99 #stuck at -1
             if past_φ == -1:
                 past_φ = -0.99
 
             if -1 <= past_φ:
-                # print('over -1')
                 if past_φ <= a:
-                    # print('over -1, under= a')
                     φ.append(((2*past_φ)+1-a) / 1+a)
             if a < past_φ:
-                # print('overa')
                 if past_φ <= 1:
-                    # print('over 1, under= 1')
                     φ.append(((-2*past_φ)+1+a) / 1-a)
-                # else:
-                    # print('phi greater than 1')
-            # else:
-                # print('phi smaller -1')
             final_len = len(φ)
             if len_phi == final_len:
                 
@@ -215,27 +189,11 @@ class Chaos_time():
         self.phi_map = self.skew_map(a=a, duration=duration)
 
 
-
-
-
-    # def split_data(self, train_frac = 0.5):
-    #     train_count = int(train_frac * self.size)
-    #     print('size',self.size)
-    #     print(train_count)
-    #     print('len of x',len(self.X))
-    #     self.train_x = self.X[0:train_count]
-    #     self.validate_x = self.X[train_count+1:]
-    #     self.train_y = self.Outputs[0:train_count]
-    #     self.validate_y = self.Outputs[train_count+1:]
-
-
 if __name__ == "__main__":
    sample_dataset = two_spirals() 
    sample_dataset.set_spirals()
    sample_dataset.string_toscaler()
-   print(sample_dataset.outputs[0:5])
-   print(sample_dataset.y[0:5])
-#    sample_dataset.plot_spirals()
+   sample_dataset.plot_spirals()
     # sample = Chaos_time()
     # sample.set_skew(a=(0.2),duration=5)
     # plt.plot(sample.phi_map)
@@ -244,10 +202,7 @@ if __name__ == "__main__":
 #    print(sample_dataset.x)
 #    print('output',sample_dataset.y)
 #    sample_dataset.split_data() they literally didn't use a train test split
-#    print('train ys', sample_dataset.train_y)
-#    print('validate ys',sample_dataset.validate_y)
-# #    print('inputs', sample_dataset.X)
-#    print('outputs',sample_dataset.Outputs)
+
     
 
 

@@ -18,20 +18,22 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-# def think(inputs, synapse):
-#     bias= -1
-#     return nonlin((np.dot(inputs,synapse)+ bias))
-
-def think(inputs, synapse, noise = False):
-    bias= -1
+def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
+    if with_bias == True:
+        bias= -1
+    else:
+        bias = 0
     if noise == False:
         return nonlin((np.dot(inputs,synapse)+ bias))
     else:
         nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
         return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
-def think_astro(inputs, synapse):
-    bias= -1
+def think_astro(inputs, synapse,with_bias=False):
+    if with_bias == True:
+        bias= -1
+    else:
+        bias = 0
     return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
@@ -60,7 +62,7 @@ def Save_network(network, title, sse_history):
     np.save(history_name, sse_history)
 
 ################################### load dataset
-n = 4
+n = 5
 dataset = Nparity_dataset(N= n)
 dataset.populate()
 
@@ -73,15 +75,15 @@ output_y = dataset.Outputs
 
 #network parameters
 hidden_layer_count = 1 #needs at least 1 hidden unit
-hidden_units = 2**n #all hidden layers have the same amount
+hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 1000
+epoch_count = 10000
 l_rate = 0.1
 
 #special parameters
-astro_status = False
-backpropastro = False
+astro_status = True
+# backpropastro = False
 if astro_status == True:
 
 
@@ -89,7 +91,7 @@ if astro_status == True:
     # start_vals[2] = 1
     # start_vals = [0.5,0.5,-0.5] #[decay, threshold, weight]
 
-    backpropastro = False #follows backpropogation derivation in paper appendix (normal backprop using the hidden unit weights and activation rule, but with acstrocite activity)
+    backpropastro = True #follows backpropogation derivation in paper appendix (normal backprop using the hidden unit weights and activation rule, but with acstrocite activity)
     train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
     train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
 
@@ -103,15 +105,6 @@ if astro_status == True:
     # anne.show_parameters()
         
     
-
-
-
-
-
-
-
-
-
 syn_list = []
 syn01 = 2*np.random.random(((len(input_x[0])),hidden_units)) -1
 syn_list.append(syn01)
@@ -227,14 +220,15 @@ for i in range(epoch_count):
         print('average_sse', sse_perepoch / train_unit_count)
 
 
-##plot that bitch's fitness over time
+##plot fitness over time
 print('final sse', SSE(layer_list[-1],output_y[train_unit_count]))
 plt.plot(SSE_Plot)
 plt.show()
 
 anne.show_parameters()
+anne.show_parameters(act_histogram=True)
 
-#trial
+#validation - single trial, validation not performed for this dataset
 trial_num = np.random.random_integers(low=0, high=train_unit_count)
 trial_output = output_y[trial_num]
 print('target', trial_output)

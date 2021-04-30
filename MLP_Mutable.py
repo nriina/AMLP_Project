@@ -15,13 +15,25 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse, noise = False):
-    bias= -0.1
+
+
+def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
+    if with_bias == True:
+        bias= -1
+    else:
+        bias = 0
     if noise == False:
         return nonlin((np.dot(inputs,synapse)+ bias))
     else:
         nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
         return nonlin((np.dot(inputs,synapse)+ bias + nois))
+
+def think_astro(inputs, synapse,with_bias=False):
+    if with_bias == True:
+        bias= -1.0
+    else:
+        bias = 0.0
+    return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
     output_list = []
@@ -145,11 +157,11 @@ for i in range(epoch_count):
         print('average_sse', sse_perepoch / train_unit_count)
 
 
-##plot that bitch's fitness over time
+##plotfitness over time
 plt.plot(SSE_Plot)
 plt.show()
 
-#trial
+#validation - single trial
 trial_num = 0
 trial_output = output_y[trial_num]
 print('target', trial_output)

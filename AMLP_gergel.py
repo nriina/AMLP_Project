@@ -6,9 +6,8 @@ import random
 
 class AAN(): #artificial astrocyte network
  
-    # def __init__(self,size = (1,2),decay_rate = [0.8,0.7], threshold = [0.8,0.8], initial_act = [0.3,0.3]):
     def __init__(self,size = (2,10),decay_rate = 0.8, threshold = 0.8, initial_act = 0.0, stable = True, weight=0.5, learning_duration = 2, backprop_status= False,learn_rule = 1):
-        self.size = size
+        self.size = size #(row,width) must be uniform
         self.input = np.zeros(size) #input from synapse
         self.output = np.zeros(size) #astrotrasmitter back into synapse
         self.activity = np.zeros(size) #holds activations
@@ -18,16 +17,16 @@ class AAN(): #artificial astrocyte network
         self.threshold = np.ones(size) #threshold for astrocyte to register activity
         self.weight_limit = 5
         self.stable_decay = stable
-        self.stable_thresh = stable
-        self.stable_initial = stable
+        self.stable_thresh = stable # Binary, if True it fills all astrocytes with same values for input
+        self.stable_initial = stable #nothing done if false but will be used to randomize eventually for a GA
         self.stable_weight = stable
         self.weights = np.ones(size) #weights
-        self.learning_dur = learning_duration
-        self.backprop = backprop_status
-        self.learn_rate = 0.1
-        self.learn_rule = learn_rule
+        self.learning_dur = learning_duration #used for averaging window for update rules
+        self.backprop = backprop_status #whether or not to do backpropogation
+        self.learn_rate = 0.1 
+        self.learn_rule = learn_rule #1 or 2(else)
 
-        # self.trial_count = 0 #keep track of trials for learning
+        #creates a set of genes full of initial values, will be revised for GA
         self.thresh_learn = 0.1
         decay_list = []
         thresh_list = []
@@ -35,7 +34,6 @@ class AAN(): #artificial astrocyte network
         weight_list = []
         if self.stable_decay == True: #added in so I can eventually use with genetic algorithm that will set mutliple decays
             for row in range(0,len(self.input)): #this will be deleted when decay_rate, treshhold, act_list are all entered as lists/ random
-                # print('self input',self.input[row])
                 for a in range(0,len(self.input[row])):
                     decay_list.append(decay_rate) #append random value here if want to randomize parameters
 
@@ -43,7 +41,6 @@ class AAN(): #artificial astrocyte network
             for row in range(0,len(self.input)):
                 for a in range(0,len(self.input[row])):
                     thresh_list.append(threshold)
-        # print('threshlist',self.threshold)
 
         if self.stable_initial == True:
             for row in range(0,len(self.input)):
@@ -52,31 +49,19 @@ class AAN(): #artificial astrocyte network
                 
         if self.stable_weight == True: #added in so I can eventually use with genetic algorithm that will set mutliple decays
             for row in range(0,len(self.input)): #this will be deleted when decay_rate, treshhold, act_list are all entered as lists/ random
-                # print('self input',self.input[row])
                 for n in range(0,len(self.input[row])):
                     weight_list.append(weight) #append random value here if want to randomize parameters
                 
         self.genes = [decay_list, thresh_list, act_list, weight_list]
-        # print('genes',self.genes)
 
-    def set_parameters(self):
-        # a = 0 #iterator
-        #a = 0 for decay rate
-        # print('len input',len(self.input))
-        # print('shape input',np.shape(self.input))
+    def set_parameters(self): #updates each with a set of genes, generated with my lists
         for row in range(0,len(self.input)):
             a = 0
             for i in range(0,len(self.decay_rate[row])):
-                # print('decay rate',self.decay_rate[row])
-                # print('genes',self.genes)
-                # print('row',row)
-                # print('decay arra', self.decay_rate)
                 self.decay_rate[row][i] = self.genes[a][i]
 
             a +=1 # threshold
             for j in range(0, len(self.threshold[row])):
-                # print(a)
-                # print('thresh',self.genes[a])
                 self.threshold[row][j] = self.genes[a][j]
 
             a +=1 #initial activity
@@ -87,7 +72,7 @@ class AAN(): #artificial astrocyte network
             for w in range(0,len(self.weights[row])):
                 self.weights[row][w] = self.genes[a][w]
     
-    def apply_limits(self):
+    def apply_limits(self): #right now only for weights, not explicitely applied in paper, but they mentioned it conceptually
         for row in range(0,len(self.input)):
             for astro in range(0,len(self.input[row])): 
                 if self.weights[row][astro] > self.weight_limit:
@@ -99,10 +84,7 @@ class AAN(): #artificial astrocyte network
     def compute_activation(self):
         for row in range(0,len(self.input)):
             for astro in range(0,len(self.input[row])): #input for each n should be the activation of that neuron
-                # print('particular input',self.input[row][astro])
-                # print('particular threshold',self.threshold[row][astro])
                 if self.input[row][astro] >= self.threshold[row][astro]:
-                    # print('input greater than threshold')
                     self.activity[row][astro] = 1
                 else:
                     self.activity[row][astro] = (self.activity[row][astro] * self.decay_rate[row][astro])
@@ -121,15 +103,12 @@ class AAN(): #artificial astrocyte network
                 self.act_history[row][astro] += self.activity[row][astro]
 
                 average_act = (self.act_history[row][astro] / self.act_count)
-                # print('lenth act history',len(self.act_history[row][astro]))
-                # self.threshold[row][astro] = (self.act_history[row][astro] / self.act_count)
                 if self.learn_rule == 1:
                     self.threshold[row][astro] = average_act
                 ## second update rule
                 else:
                     self.threshold[row][astro] = self.threshold[row][astro] + (self.learn_rate * (average_act - self.threshold[row][astro]))
 
-                # self.threshold[row][astro] = self.threshold[row][astro] + self.thresh_learn * (self.activity[row][astro] - self.threshold[row][astro])
         if self.backprop == True:
             self.apply_limits()
 
@@ -144,15 +123,11 @@ class AAN(): #artificial astrocyte network
 
                 self.act_history[row][astro] += self.activity[row][astro]
                 
-                # print('lenth act history',len(self.act_history[row][astro]))
                 average_act = (self.act_history[row][astro] / self.act_count)
-                # self.decay_rate[row][astro] = 1 - (self.act_history[row][astro] / self.act_count)
                 if self.learn_rule == 1:
                     self.decay_rate[row][astro] = 1 - average_act
                 else:
                     self.decay_rate[row][astro] = self.decay_rate[row][astro] + (self.learn_rate*((1 - average_act) - self.decay_rate[row][astro]))
-                # self.threshold[row][astro] = self.activity[row][astro]
-                # self.decay_rate[row][astro] = 1 - (self.activity[row][astro])
         if self.backprop == True:
             self.apply_limits()
 
@@ -164,10 +139,8 @@ class AAN(): #artificial astrocyte network
                     self.activity[row][astro] = 1
                 else:
                     self.activity[row][astro] = self.activity[row][astro] * self.decay_rate[row][astro]
-                # self.threshold[row][astro] = self.activity[row][astro]
                 self.act_history[row][astro] += self.activity[row][astro]
                 
-                # print('lenth act history',len(self.act_history[row][astro]))
                 average_act = (self.act_history[row][astro] / self.act_count)
                 if self.learn_rule ==1:
                     self.decay_rate[row][astro] = 1 - (average_act)
@@ -179,7 +152,8 @@ class AAN(): #artificial astrocyte network
         if self.backprop == True:
             self.apply_limits()
     
-    def show_parameters(self, act_histogram = False, bar=False,histograms=True):
+    #can plot a histogram of activity, a bar graph of weight, thresh, and decay, or can do histograms of all four
+    def show_parameters(self, act_histogram = False, bar=False,histograms=True): 
 
         x_range = 0
         weightlist = []
@@ -216,7 +190,6 @@ class AAN(): #artificial astrocyte network
                 for astro in range(0,len(self.input[row])): #input for each n should be the activation of that neuron
                     activities.append(self.activity[row][astro])
                 
-            # x = [21,22,23,4,5,6,77,8,9,10,31,32,33,34,35,36,37,18,49,50,100]
             num_bins = 50
             plt.title('Distribution of astrocyte activity')
             n, bins, patches = plt.hist(activities, num_bins, facecolor='blue', alpha=0.5)
@@ -227,7 +200,6 @@ class AAN(): #artificial astrocyte network
         if histograms == True:
 
             activities = []
-            # for act in self.activity
             for row in range(0,len(self.input)):
                 for astro in range(0,len(self.input[row])): #input for each n should be the activation of that neuron
                     activities.append(self.activity[row][astro])
@@ -239,52 +211,45 @@ class AAN(): #artificial astrocyte network
             plt.subplot(1,4,1)
             plt.suptitle('Distribution of Astro parameters')
             plt.title('Weights')
-            # plt.bar(x = range(0,x_range),height=weightlist)
 
-            # plt.title('Distribution of astrocyte activity')
             n, bins, patches = plt.hist(weightlist, num_bins, facecolor='blue', alpha=0.5)
-            # plt.xlabel('Astrocyte Weight')
             plt.ylabel('Frequency')
-            # plt.show()
 
             plt.subplot(1,4,2)
             plt.title('Threshold')
-            # plt.bar(x = range(0,x_range),height=weightlist)
 
-            # plt.title('Distribution of astrocyte activity')
             n, bins, patches = plt.hist(thres_list, num_bins, facecolor='blue', alpha=0.5)
-            # plt.xlabel('Astrocytic Treshold')
-            # plt.ylabel('Frequency')
-            # plt.show()
 
             plt.subplot(1,4,3)
             plt.title('Decay Rate')
-            # plt.bar(x = range(0,x_range),height=weightlist)
 
-            # plt.title('Distribution of astrocyte decay rate')
             n, bins, patches = plt.hist(dec_list, num_bins, facecolor='blue', alpha=0.5)
-            # plt.xlabel('Astrocyte Decay Rate')
-            # plt.ylabel('Frequency')
-            # plt.show()
 
             plt.subplot(1,4,4)
             plt.title('Activity')
-            # plt.bar(x = range(0,x_range),height=weightlist)
 
-            # plt.title('Distribution of astrocyte decay rate')
             n, bins, patches = plt.hist(activities, num_bins, facecolor='blue', alpha=0.5)
-            # plt.xlabel('Astrocyte decay rate')
-            # plt.ylabel('Frequency')
             plt.show()
 
 
 if __name__ == "__main__":
-    anne = AAN(initial_act=0)
+    anne = AAN(initial_act=0, learn_rule=2)
+    anne.learn_rate = 0.5
     anne.set_parameters()
+    
     print('anne threshold',anne.threshold)
     print(anne.activity)
-    anne.compute_activation()
+    print('anne thresh', anne.threshold)
+    # anne.compute_activation()
+    anne.compute_activation_theta()
     print(anne.activity)
-    anne.compute_activation()
+    print('anne thresh', anne.threshold)
+
+    # anne.compute_activation()
+    anne.compute_activation_theta()
+
     print(anne.activity)
+    print('anne thresh', anne.threshold)
+    
+
 

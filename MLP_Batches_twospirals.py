@@ -20,12 +20,23 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse):
-    bias= -1.0
-    return nonlin((np.dot(inputs,synapse)+ bias))
 
-def think_astro(inputs, synapse):
-    bias= -1.0
+def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
+    if with_bias == True:
+        bias= -1
+    else:
+        bias = 0
+    if noise == False:
+        return nonlin((np.dot(inputs,synapse)+ bias))
+    else:
+        nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
+        return nonlin((np.dot(inputs,synapse)+ bias + nois))
+
+def think_astro(inputs, synapse,with_bias=False):
+    if with_bias == True:
+        bias= -1.0
+    else:
+        bias = 0.0
     return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
@@ -72,14 +83,17 @@ compute_validation = True
 batch_number = 100
 current_batch = 0
 batches = []
+batch_Activity = []
 # final_batches = []
 #special parameters
-astro_status = False
-backpropastro = False
+astro_status = True
+# backpropastro = False
 if astro_status == True:
 
-    # start_vals = np.random.random(3)
+
     ## random
+    # start_vals = np.random.random(3)
+    #random but with a single set value
     # start_vals = list(np.random.random(2))
     # start_vals.append(1.0)
 
@@ -87,15 +101,16 @@ if astro_status == True:
     # start_vals = [0.01,0.1,0.11] #[decay, threshold, weight]
     # start_vals[0] = np.random.random() #between 0 and 1
     # start_vals = [0.5,0.1,-0.1] #[decay, threshold, weight] their values
+
     start_vals = [0.66, 0.28, 1.0] #my values
     # start_vals[2] = np.random.random() #between 0 and 1
 
 
-    backpropastro = False #follows backpropogation 
-    train_decay = False #trained by setting value to inverse of average activity of corresponding astro (each individually)
-    train_threshold = False #trained by setting value to running average of corresponding astro activity (each have their own)
+    backpropastro = True #follows backpropogation 
+    train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
+    train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
 
-    anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
+    anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro, learn_rule=2)
     anne.set_parameters()
 
     if backpropastro == True:
@@ -223,9 +238,11 @@ while current_batch < batch_number:
             print('current Epoch:',i)
             print('average_sse', sse_perepoch / train_unit_count)
 
-    # final_sse = SSE(layer_list[-1],output_y[train_unit_count])
     batches.append(SSE_Plot[-1])
-    # batches.append(final_sse)
+    for ac in anne.activity:
+        for ap in ac:
+            batch_Activity.append(ap)
+
     ### compute validation error
     if compute_validation == True:
         # if train_unit_count % 50 == True:
@@ -272,21 +289,12 @@ while current_batch < batch_number:
                             layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
                     layer_list.append(nonlin(layer))
 
-
-            #compute error
-            # val_net_error = Error(layer_list[-1],validate_output[test_unit_count])
-            # print('val net error',val_net_error)
-            # print('leyer list -1',layer_list[-1])
-            # print('validate output',validate_output[test_unit_count])
-            # epoch_error += val_net_error
             val_sse_perepoch += SSE(layer_list[-1],validate_output[test_unit_count])
 
         vale_sse = val_sse_perepoch / test_unit_count
-        # np.average()
         vale_plot.append(vale_sse)
     
 
-    # final_batches.append(SSE(layer_list[-1],output_y[train_unit_count]))
     current_batch +=1
 
 
@@ -296,7 +304,6 @@ for sse in batches:
     if sse < max_sse:
         max_sse = sse
 std = np.std(batches)
-# print('n',n)
 print('final average sse', average)
 print('final sse',batches[-1])
 print('standard deviation', std)
@@ -305,9 +312,16 @@ print('no astro, no bias')
 
 print('validation')
 print('average validate sse',np.average(vale_plot))
-# print('vale plot length', len(vale_plot)) 
-# print('vale plot',vale_plot)
 print('vale std',np.std(vale_plot))
 print('none')
 
 
+print('activations histogram')
+print('length activations list',len(batch_Activity))
+activities = batch_Activity
+num_bins = 50
+plt.title('Two-Spirals Astrocyte Activations')
+n, bins, patches = plt.hist(activities, num_bins, facecolor='blue', alpha=0.5)
+plt.xlabel('Final Activation')
+plt.ylabel('Frequency')
+plt.show()

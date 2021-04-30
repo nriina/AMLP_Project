@@ -18,12 +18,22 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse):
-    bias= -1
-    return nonlin((np.dot(inputs,synapse)+ bias))
+def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
+    if with_bias == True:
+        bias= -1
+    else:
+        bias = 0
+    if noise == False:
+        return nonlin((np.dot(inputs,synapse)+ bias))
+    else:
+        nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
+        return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
-def think_astro(inputs, synapse):
-    bias= -1
+def think_astro(inputs, synapse,with_bias=False):
+    if with_bias == True:
+        bias= -1.0
+    else:
+        bias = 0.0
     return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
@@ -40,27 +50,26 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
     return network_error
 
 ################################### load dataset
-# n = 5
-# dataset = Nparity_dataset(N= n)
-# dataset.populate()
+n = 4
+dataset = Nparity_dataset(N= n)
+dataset.populate()
 
-# input_x = dataset.X
+input_x = dataset.X
 
-# output_y = dataset.Outputs
+output_y = dataset.Outputs
 
-########################################### 2 spirals load dataset
-################################### load dataset spirals
-dataset = two_spirals(size=100)
-dataset.set_spirals()
-dataset.string_toscaler()
-# dataset.plot_spirals()
-dataset.test_train_split(0.8)
+## load 2 spirals dataset 
+## same file used for both grid searches
 
-# input_x = dataset.x
-input_x = dataset.train_x
+# dataset = two_spirals(size=100)
+# dataset.set_spirals()
+# dataset.string_toscaler()
+# # dataset.plot_spirals()
+# dataset.test_train_split(0.8)
 
-# output_y = dataset.y
-output_y = dataset.train_y
+# input_x = dataset.train_x #if one wants to train
+
+# output_y = dataset.train_y
 
 #################################3
 
@@ -70,16 +79,21 @@ hidden_layer_count = 1 #needs at least 1 hidden unit
 hidden_units = n #all hidden layers have the same amount
 output_units = len(output_y[0])
 total_layer_count = hidden_layer_count + 2
-epoch_count = 500
+epoch_count = 5000
 l_rate = 0.1
 
 #best combo: [0.1, 0.11, 0.01], best sse 0.9346685300687123
+# best combo 2 [0.34, 0.46, 1.0]
+#best learn rule 1 = thresh = 0.28, decay = 0.99, wait = -0.78
+#best learn rule 1 v 2, thresh = 0.37, decay = 0.01, weight = -1.0
+
+#best learn rule 2 = theta = 0.46, decay = 0.34, weight = -0.78
 
 weight_iterations = [-1.00, -0.78, -0.56,-0.33, -0.11, 0.11, 0.33, 0.56, 0.78, 1.00]
 decay_iterations = [0.01, 0.12, 0.23, 0.34, 0.45, 0.55, 0.66, 0.77, 0.88, 0.99]
 thresh_iterations = [0.10, 0.19, 0.28, 0.37, 0.46, 0.54, 0.63, 0.72, 0.81, 0.90]
 
-iterations = 5
+iterations = 10
 
 vegetables_list = []
 farmers_list = []
@@ -90,7 +104,6 @@ astro_status = True
 if astro_status == True:
     weight_graphs = []
     for weight in weight_iterations:
-        # weight_test = weight_iterations[0]
         decay_list = []
         for decay in decay_iterations:
             
@@ -102,13 +115,11 @@ if astro_status == True:
                     # start_vals = np.random.random(3)
                     start_vals = [decay,thre,weight] #[decay, threshold, weight]
 
-
-
                     backpropastro = False
                     train_decay = True
                     train_threshold = False
 
-                    anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
+                    anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro, learn_rule=2)
                     anne.set_parameters()
 
                     if backpropastro == True:
@@ -129,8 +140,6 @@ if astro_status == True:
                     synoutput = 2* np.random.random((hidden_units,output_units))-1  # 2* -1 to center random values around 0
                     syn_list.append(synoutput)
 
-
-
                     print('beginning testing, Epoch = 0/'+str(epoch_count))
                     SSE_Plot = []
                     for i in range(epoch_count):
@@ -140,8 +149,6 @@ if astro_status == True:
 
 
                         for train_unit_count in range(0, int(len(input_x))-1):
-
-
                     
                             train_unit = input_x[train_unit_count]
                             train_unit = np.asarray(train_unit)
@@ -230,18 +237,13 @@ if astro_status == True:
                             print('average_sse', sse_perepoch / train_unit_count)
 
 
-                    ##plot that bitch's fitness over time
                     final_sse = SSE_Plot[-1]
                     it_list.append(final_sse)
-                    # plt.plot(SSE_Plot)
-                    # plt.show()
                 average_sse = 0
                 for ss in range(len(it_list)):
                     average_sse += it_list[ss]
                     average_sse = average_sse / len(it_list)
-                # thresh_list.append(average_sse)
                 thresh_list.append( 1 - average_sse) #change to accuracy
-                # print('threshlist',thresh_list)
             decay_list.append(thresh_list)
 
         weight_graphs.append(np.array(decay_list))
@@ -262,35 +264,23 @@ if astro_status == True:
     #                     [1.3, 1.2, 0.0, 0.0, 0.0, 3.2, 5.1],
     #                     [0.1, 2.0, 0.0, 1.4, 0.0, 1.9, 6.3]])
 
-# for weight_name in range(len(weight_iterations)):
-#     
-#     # harvest = np.array(decay_list)
-#     harvest = weight_graphs[weight_name]
-#     # weight_graphs.append(harvest)
-#     print('harvest',harvest)
-#     # print('threshlist',thresh_list)
-#         # print('decay list',decay_list)
-
-
-    # fig, ax = plt.subplots(len(weight_iterations), 1, weight_name+1)
 
 fig, axs = plt.subplots(1,len(weight_iterations))
 
-# vegetables = decay_iterations
+# vegetables = decay_iterations #for when we want labels
 # farmers = thresh_iterations
-vegetables = []
-farmers = []
+vegetables = [] #empty lists for no labels
+farmers = [] #empty lists for no labels
 
-print('nparity redo mini')
+print('nparity  fat boi, learnrule=2')
 for weight_g in range(len(weight_graphs)):
-    # print('weight graph',weight_graphs[weight_g])
     axs[weight_g].imshow(weight_graphs[weight_g])
     axs[weight_g].set_title('Weight: '+str(weight_iterations[weight_g]))
 
-    # We want to show all ticks...
+    # We want to show all ticks:
     axs[weight_g].set_xticks(np.arange(len(farmers)))
     axs[weight_g].set_yticks(np.arange(len(vegetables)))
-    # # ... and label them with the respective list entries
+    # # ... and label them with the respective list entries - labels code right here
     # axs[weight_g].set_xticklabels(farmers)
     # axs[weight_g].set_yticklabels(vegetables)
 
@@ -305,8 +295,6 @@ best_it = [0,0,0]
 for ite in range(len(weight_graphs)):
     for decl in range(len(weight_graphs[ite])):
         for wait in range(len(weight_graphs[ite][decl])):
-            # print('wait',wait)
-            # print('wait entry',weight_graphs[ite][decl][wait])
             if weight_graphs[ite][decl][wait] > best:
                 best = weight_graphs[ite][decl][wait]
                 best_it[0] = wait #which thresh
@@ -317,82 +305,4 @@ print('best sse for two spirals',best)
 print('best combo thresh:',  thresh_iterations[best_it[0]])
 print('best combo1 decl:',  decay_iterations[best_it[1]])
 print('best combo2 wait:',weight_iterations[best_it[2]])
-
-
-# im = axs[0].imshow(harvest)
-# # We want to show all ticks...
-# im.set_xticks(np.arange(len(farmers)))
-# ax.set_yticks(np.arange(len(vegetables)))
-# # ... and label them with the respective list entries
-# ax.set_xticklabels(farmers)
-# ax.set_yticklabels(vegetables)
-
-# # Rotate the tick labels and set their alignment.
-# plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-#         rotation_mode="anchor")
-
-#     # Loop over data dimensions and create text annotations.
-#     # for i in range(len(vegetables)):
-#     #     for j in range(len(farmers)):
-#     #         text = ax.text(j, i, harvest[i, j],
-#     #                        ha="center", va="center", color="w")
-
-# ax.set_title("gridsearch for weight" + str(weight_iterations[weight_name]))
-# fig.tight_layout()
-# plt.show()
-
-
-
-    # fig, ax = plt.subplots(5, 1, 1)
-    # im = ax.imshow(harvest)
-
-    # # We want to show all ticks...
-    # ax.set_xticks(np.arange(len(farmers)))
-    # ax.set_yticks(np.arange(len(vegetables)))
-    # # ... and label them with the respective list entries
-    # ax.set_xticklabels(farmers)
-    # ax.set_yticklabels(vegetables)
-
-    # # Rotate the tick labels and set their alignment.
-    # plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-    #         rotation_mode="anchor")
-
-    # # Loop over data dimensions and create text annotations.
-    # # for i in range(len(vegetables)):
-    # #     for j in range(len(farmers)):
-    # #         text = ax.text(j, i, harvest[i, j],
-    # #                        ha="center", va="center", color="w")
-
-    # ax.set_title("gridsearch for weight" + str(weight))
-    # fig.tight_layout()
-    # # plt.show()
-
-
-
-
-
-# #trial
-# trial_num = 0
-# trial_output = output_y[trial_num]
-# print('target', trial_output)
-
-# #run value back through network
-# train_unit = input_x[trial_num]
-# train_unit = np.asarray(train_unit)
-# layer_list = []
-
-# new_unit = Flatt(train_unit)
-# new_unit = np.asarray(new_unit)
-
-
-# layer_list.append(new_unit.T)
-
-# for lay in range(1,total_layer_count):
-#     prev_layer = layer_list[lay-1]
-#     layer = think(prev_layer,syn_list[lay-1])
-#     layer_list.append(layer)
-
-
-# network_output = layer_list[-1]
-# print('actual',network_output)
 

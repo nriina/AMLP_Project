@@ -19,12 +19,22 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-def think(inputs, synapse):
-    bias= -1
-    return nonlin((np.dot(inputs,synapse)+ bias))
+def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
+    if with_bias == True:
+        bias= -1
+    else:
+        bias = 0
+    if noise == False:
+        return nonlin((np.dot(inputs,synapse)+ bias))
+    else:
+        nois = np.random.uniform(low=-1.0,high=1.0,size=(len(np.dot(inputs,synapse))))
+        return nonlin((np.dot(inputs,synapse)+ bias + nois))
 
-def think_astro(inputs, synapse):
-    bias= -1
+def think_astro(inputs, synapse,with_bias=False):
+    if with_bias == True:
+        bias= -1.0
+    else:
+        bias = 0.0
     return (np.dot(inputs,synapse)+ bias)
 
 def Flatt(inputlist):
@@ -37,10 +47,9 @@ def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
 
     represent = actual
     network_error = actual - networkoutput
-
     return network_error
 
-################################### load dataset
+# load dataset
 n = 4
 dataset = Nparity_dataset(N= n)
 dataset.populate()
@@ -64,42 +73,37 @@ l_rate = 0.1
 batch_number = 100
 current_batch = 0
 batches = []
-# final_batches = []
+batch_activity = []
+
 #special parameters
 astro_status = True
-# backpropastro = False
+# backpropastro = False #needs to be in the code if astro_status== False, in order to run normal backprop
 if astro_status == True:
-
     start_vals = np.random.random(3)
     ## random
     # start_vals = list(np.random.random(2))
     # start_vals.append(1.0)
 
     #set manually
-    start_vals = [0.01,0.1,0.11] #[decay, threshold, weight] [0.34, 0.46, 1.0] - trial 2
+    # start_vals = [0.01,0.1,0.11] #[decay, threshold, weight] [0.34, 0.46, 1.0] - trial 2
     # start_vals[0] = np.random.random() #between 0 and 1
 
+    backpropastro = True #follows backpropogation 
+    train_decay = True #trained by setting value to inverse of average activity of corresponding astro (each individually)
+    train_threshold = True #trained by setting value to running average of corresponding astro activity (each have their own)
 
-    backpropastro = False #follows backpropogation 
-    train_decay = False #trained by setting value to inverse of average activity of corresponding astro (each individually)
-    train_threshold = False #trained by setting value to running average of corresponding astro activity (each have their own)
-
-    anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro)
+    anne = AAN(size=(hidden_layer_count, hidden_units), decay_rate=start_vals[0], threshold=start_vals[1],weight=start_vals[2],backprop_status=backpropastro, learn_rule=2)
     anne.set_parameters()
 
-    if backpropastro == True:
+    if backpropastro == True: #applies when learn rule == 2
         astro_l_rate = l_rate
         
     
-
-
-
-
 while current_batch < batch_number:
-
-    syn_list = []
+    syn_list = [] #holds weights for every trained network
     syn01 = 2*np.random.random(((len(input_x[0])),hidden_units)) -1
     syn_list.append(syn01)
+    
 
     for layer in range(0,hidden_layer_count-1):
 
@@ -111,18 +115,15 @@ while current_batch < batch_number:
     syn_list.append(synoutput)
 
 
-
     print('beginning testing, Epoch = 0/'+str(epoch_count))
     SSE_Plot = []
     for i in range(epoch_count):
         epoch_error = np.zeros(output_units)
         epoch_error = epoch_error.reshape(1,output_units)
-        sse_perepoch = 0
-
+        sse_perepoch = 0 #used for graphing
 
         for train_unit_count in range(0, int(len(input_x))-1):
-
-            current_sse = 0
+            current_sse = 0 #used for keeping track
 
             train_unit = input_x[train_unit_count]
             train_unit = np.asarray(train_unit)
@@ -145,7 +146,7 @@ while current_batch < batch_number:
                     layer = think_astro(prev_layer,syn_list[lay-1])
 
                     if lay < (total_layer_count-1): #index is one less than total layer count
-                        anne.input[lay-1] = nonlin(layer)   #lay-1 because layer 1 for neuron is layer 0 for glia
+                        anne.input[lay-1] = nonlin(layer)   #lay-1 because layer 1 for neuron is layer 0 for glia - only on hidden units
                         if train_decay == False:
                             if train_threshold == False: #both false
                                 anne.compute_activation()
@@ -159,8 +160,8 @@ while current_batch < batch_number:
                                 anne.compute_activation_all() #all true
 
 
-                        for n in range(0,len(layer)):
-                            layer[n] += (anne.activity[lay-1][n] * anne.weights[lay-1][n])
+                        for nu in range(0,len(layer)):
+                            layer[nu] += (anne.activity[lay-1][nu] * anne.weights[lay-1][nu])
                     layer_list.append(nonlin(layer))
 
 
@@ -176,7 +177,6 @@ while current_batch < batch_number:
             delta_list.append(np.asarray(final_delta)) #delta is backwards should be 6 total deltas (for every layer except input)
 
             ######back prop
-
             synapse_count = len(syn_list)-1
             
             start_synapse_count = len(syn_list)-1
@@ -211,7 +211,9 @@ while current_batch < batch_number:
             print('average_sse', sse_perepoch / train_unit_count)
 
     batches.append(SSE_Plot[-1])
-    # final_batches.append(SSE(layer_list[-1],output_y[train_unit_count]))
+    for ac in anne.activity:
+        for ap in ac:
+            batch_activity.append(ap)
     current_batch +=1
 
 
@@ -227,18 +229,13 @@ print('standard deviation', std)
 print('best sse', max_sse)
 print('yes astro, no train')
 
-#best 2 = [0.33,0.01,0.1] thresh,dec,wait
-# finaverage = np.sum(final_batches) / len(final_batches)
-# max_ssefin = 1
-# for ssef in final_batches:
-#     if ssef < max_ssefin:
-#         max_ssefin = ssef
-# std = np.std(final_batches)
-# print('with final presenting')
-# print('n',n)
-# print('average sse', finaverage)
-# print('standard deviation', stdf)
-# print('best sse', max_ssefin)
-# print('decay')
+activities = batch_activity
+num_bins = 50
+plt.title(str(n) + '-Parity')
+n, bins, patches = plt.hist(activities, num_bins, facecolor='blue', alpha=0.5)
+plt.xlabel('Astrocyte Activation')
+plt.ylabel('Frequency')
+plt.show()
+
 
 
