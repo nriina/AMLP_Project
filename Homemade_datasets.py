@@ -17,7 +17,6 @@ class Nparity_dataset():
         self.N = N #amount of inputs per instance
         self.size = 2 ** N #this was just how they did it in the paper but it is how many integers in whole dataset
 
-        
     def populate(self):
         for i in range(0,self.size):
             instance = np.random.randint(2, size=self.N)
@@ -58,7 +57,7 @@ class two_spirals():
             spiral_num is 1 or -1
         """
         φ = i/16 * math.pi
-        r = 6.5 * ((70 - i)/70) #104
+        r = 6.5 * ((104 - i)/104) #104, lower this value to make spirals less tight, discovered after presentation
         x = (r * math.cos(φ) * spiral_num)/13 + 0.5
         y = (r * math.sin(φ) * spiral_num)/13 + 0.5
         return (x, y)

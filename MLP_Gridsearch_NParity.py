@@ -82,12 +82,6 @@ total_layer_count = hidden_layer_count + 2
 epoch_count = 5000
 l_rate = 0.1
 
-#best combo: [0.1, 0.11, 0.01], best sse 0.9346685300687123
-# best combo 2 [0.34, 0.46, 1.0]
-#best learn rule 1 = thresh = 0.28, decay = 0.99, wait = -0.78
-#best learn rule 1 v 2, thresh = 0.37, decay = 0.01, weight = -1.0
-
-#best learn rule 2 = theta = 0.46, decay = 0.34, weight = -0.78
 
 weight_iterations = [-1.00, -0.78, -0.56,-0.33, -0.11, 0.11, 0.33, 0.56, 0.78, 1.00]
 decay_iterations = [0.01, 0.12, 0.23, 0.34, 0.45, 0.55, 0.66, 0.77, 0.88, 0.99]

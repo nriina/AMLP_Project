@@ -20,7 +20,6 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-
 def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
     if with_bias == True:
         bias= -1

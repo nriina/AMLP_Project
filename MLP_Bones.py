@@ -15,8 +15,6 @@ def SSE(network, actual):
     bigerror = (np.sum(error))*0.5
     return bigerror
 
-
-
 def think(inputs, synapse, noise = False, with_bias = False): #paper did not say they used a bias term
     if with_bias == True:
         bias= -1
@@ -41,11 +39,9 @@ def Flatt(inputlist):
             output_list.append(row)
     return output_list
 
-
-
 def Error(networkoutput, actual): #actual is 0-9, network is (1,10)
 
-    represent = actual
+    represent = actual #done this way for easy adjustment
     network_error = actual - networkoutput
 
     return network_error
@@ -58,7 +54,6 @@ input_x = [ [0,0],
 
 
 output_y = [[0,0],[1,1],[1,1],[0,0]]
-
 
 
 #network parameters
@@ -83,8 +78,6 @@ for layer in range(0,hidden_layer_count-1):
 synoutput = 2* np.random.random((hidden_units,output_units))-1  # 2* -1 to center random values around 0
 syn_list.append(synoutput)
 
-# ### bias list
-# bias_list = 2*np.random.random((hidden_layer_count,hidden_units)) -1
 
 print('beginning testing, Epoch = 0/'+str(epoch_count))
 SSE_Plot = []
@@ -120,8 +113,7 @@ for i in range(epoch_count):
 
         current_sse = SSE(layer_list[-1],output_y[train_unit_count])
         sse_perepoch += current_sse
-        
-        ####################adjust weights - something is broken in here
+  
         final_delta = net_error * nonlin(layer_list[-1], derive= True)
         delta_list = []
         delta_list.append(np.asarray(final_delta)) #delta is backwards should be 6 total deltas (for every layer except input)
@@ -149,13 +141,10 @@ for i in range(epoch_count):
 
             synapse_count -= 1
 
-    
-
     SSE_Plot.append(sse_perepoch / train_unit_count)
     if i%100 == 0:
         print('current Epoch:',i)
         print('average_sse', sse_perepoch / train_unit_count)
-
 
 ##plotfitness over time
 plt.plot(SSE_Plot)
@@ -181,7 +170,6 @@ for lay in range(1,total_layer_count):
     prev_layer = layer_list[lay-1]
     layer = think(prev_layer,syn_list[lay-1])
     layer_list.append(layer)
-
 
 network_output = layer_list[-1]
 print('actual',network_output)
