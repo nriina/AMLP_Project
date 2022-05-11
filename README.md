@@ -10,10 +10,10 @@ Springer.
 
 
 The neural network is a Feed-Forward multi-layer perceptron with adjustable parameters
-The astrocytic model adds one astrocyte to each neuron
+The astrocytic model adds one astrocyte to each neuron./r
 The model is trained with traditional backpropogation
 
-The tasks included are N-Parity and 2-Spirals
+The tasks included are N-Parity and 2-Spirals/r
 N-parity is a complex logic gate, with a binary input space (N length vector of 1's and 0's). 
 
 The correct output is a 1 (True or Even) if the number of 1's is even, and 0 if the number of inputted 1's is odd.
