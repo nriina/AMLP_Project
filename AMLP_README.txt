@@ -7,25 +7,8 @@ See paper:
 https://doi.org/10.1007/978-3-030-01424-7 _ 8
 
 
-to do:
+Astrocytes are part of the central nervous system that have been recently been gaining computational ground. They seem to send signals to each other using calcium waves that move in a slower timescale than neural electric communication. This model implements a multi-layer perceptron trained with gradient descent and back propogation. The astrocytic addition adds one astrocyte to each neuron that is activated slowely, over the training set. 
 
-MLP - n parity
-AMLP - n parity
-
-MLP - two spirals
-AMLP - two spirals
-
-upload datasets
-
-test train split
-
-validation functions
-
-
-git hub Thinker projects
-
-git hub CTRNN stuff
-
-update
-
+The following code includes a file for running the AMLP, and several datasets that were included in the paper listed above including:
+  N-Parity and 2 Spirals
 
