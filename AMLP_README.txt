@@ -11,4 +11,8 @@ Astrocytes are part of the central nervous system that have been recently been g
 
 The following code includes a file for running the AMLP, and several datasets that were included in the paper listed above including:
   N-Parity and 2 Spirals
+  
+This was done as a part of a school project, so the following files are also included: The AMLP implemented on the datasets, a gridsearch to find optimal parameters, and a "batches" file that runs the AMLP numerous times to collect average performance.
+
+Overall it seemed like the Astrocytic implementation improved the performance of the network, especially by giving the network a jolt whenever it seemed to be stuck in a local minimum.
 
